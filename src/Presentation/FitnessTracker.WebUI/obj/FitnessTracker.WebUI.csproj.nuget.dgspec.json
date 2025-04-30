@@ -57,14 +57,14 @@
         }
       }
     },
-    "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Infrastructure/FitnessTracker.Infrastructure/FitnessTracker.Infrastructure.csproj": {
+    "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Domain/FitnessTracker.Domain/FitnessTracker.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Infrastructure/FitnessTracker.Infrastructure/FitnessTracker.Infrastructure.csproj",
-        "projectName": "FitnessTracker.Infrastructure",
-        "projectPath": "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Infrastructure/FitnessTracker.Infrastructure/FitnessTracker.Infrastructure.csproj",
+        "projectUniqueName": "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Domain/FitnessTracker.Domain/FitnessTracker.Domain.csproj",
+        "projectName": "FitnessTracker.Domain",
+        "projectPath": "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Domain/FitnessTracker.Domain/FitnessTracker.Domain.csproj",
         "packagesPath": "/home/donatgosalci/.nuget/packages/",
-        "outputPath": "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Infrastructure/FitnessTracker.Infrastructure/obj/",
+        "outputPath": "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Domain/FitnessTracker.Domain/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/donatgosalci/.nuget/NuGet/NuGet.Config"
@@ -90,6 +90,95 @@
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
+          "dependencies": {
+            "Microsoft.EntityFrameworkCore.Relational": {
+              "target": "Package",
+              "version": "[8.0.4, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.115/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Infrastructure/FitnessTracker.Infrastructure/FitnessTracker.Infrastructure.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Infrastructure/FitnessTracker.Infrastructure/FitnessTracker.Infrastructure.csproj",
+        "projectName": "FitnessTracker.Infrastructure",
+        "projectPath": "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Infrastructure/FitnessTracker.Infrastructure/FitnessTracker.Infrastructure.csproj",
+        "packagesPath": "/home/donatgosalci/.nuget/packages/",
+        "outputPath": "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Infrastructure/FitnessTracker.Infrastructure/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/home/donatgosalci/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Domain/FitnessTracker.Domain/FitnessTracker.Domain.csproj": {
+                "projectPath": "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Domain/FitnessTracker.Domain/FitnessTracker.Domain.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[8.0.4, )"
+            },
+            "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[8.0.4, )"
+            },
+            "Microsoft.EntityFrameworkCore.Sqlite": {
+              "target": "Package",
+              "version": "[8.0.4, )"
+            },
+            "Microsoft.Extensions.Configuration": {
+              "target": "Package",
+              "version": "[9.0.4, )"
+            },
+            "Microsoft.Extensions.Configuration.FileExtensions": {
+              "target": "Package",
+              "version": "[9.0.4, )"
+            },
+            "Microsoft.Extensions.Configuration.Json": {
+              "target": "Package",
+              "version": "[9.0.4, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
@@ -150,6 +239,14 @@
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
+          "dependencies": {
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.4, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
