@@ -1,8 +1,22 @@
 {
   "version": 2,
-  "dgSpecHash": "/7SbqoIajEjyD4QlabwW8TnKBU2Ssm48whjfcs05SWqJTWXMU4Nzvmdh3Cgk6EB/W+BsWR7QOrfAxSTo6etQfA==",
+  "dgSpecHash": "osYDODlfJwr0jUMbET7Jjs9AjJV+h8hJ9XV73Z5uoasFFd2227mASX9u9mrW6PpVhYPdfzgnrRjSY0w8nj6OUA==",
   "success": true,
   "projectFilePath": "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Domain/FitnessTracker.Domain/FitnessTracker.Domain.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "/home/donatgosalci/.nuget/packages/microsoft.entityframeworkcore/8.0.4/microsoft.entityframeworkcore.8.0.4.nupkg.sha512",
+    "/home/donatgosalci/.nuget/packages/microsoft.entityframeworkcore.abstractions/8.0.4/microsoft.entityframeworkcore.abstractions.8.0.4.nupkg.sha512",
+    "/home/donatgosalci/.nuget/packages/microsoft.entityframeworkcore.analyzers/8.0.4/microsoft.entityframeworkcore.analyzers.8.0.4.nupkg.sha512",
+    "/home/donatgosalci/.nuget/packages/microsoft.entityframeworkcore.relational/8.0.4/microsoft.entityframeworkcore.relational.8.0.4.nupkg.sha512",
+    "/home/donatgosalci/.nuget/packages/microsoft.extensions.caching.abstractions/8.0.0/microsoft.extensions.caching.abstractions.8.0.0.nupkg.sha512",
+    "/home/donatgosalci/.nuget/packages/microsoft.extensions.caching.memory/8.0.0/microsoft.extensions.caching.memory.8.0.0.nupkg.sha512",
+    "/home/donatgosalci/.nuget/packages/microsoft.extensions.configuration.abstractions/8.0.0/microsoft.extensions.configuration.abstractions.8.0.0.nupkg.sha512",
+    "/home/donatgosalci/.nuget/packages/microsoft.extensions.dependencyinjection/8.0.0/microsoft.extensions.dependencyinjection.8.0.0.nupkg.sha512",
+    "/home/donatgosalci/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/8.0.0/microsoft.extensions.dependencyinjection.abstractions.8.0.0.nupkg.sha512",
+    "/home/donatgosalci/.nuget/packages/microsoft.extensions.logging/8.0.0/microsoft.extensions.logging.8.0.0.nupkg.sha512",
+    "/home/donatgosalci/.nuget/packages/microsoft.extensions.logging.abstractions/8.0.0/microsoft.extensions.logging.abstractions.8.0.0.nupkg.sha512",
+    "/home/donatgosalci/.nuget/packages/microsoft.extensions.options/8.0.0/microsoft.extensions.options.8.0.0.nupkg.sha512",
+    "/home/donatgosalci/.nuget/packages/microsoft.extensions.primitives/8.0.0/microsoft.extensions.primitives.8.0.0.nupkg.sha512"
+  ],
   "logs": []
 }
