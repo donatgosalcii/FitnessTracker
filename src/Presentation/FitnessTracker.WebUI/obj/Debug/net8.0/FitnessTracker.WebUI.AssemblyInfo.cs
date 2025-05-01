@@ -10,10 +10,11 @@
 using System;
 using System.Reflection;
 
+[assembly: Microsoft.AspNetCore.Identity.UI.UIFrameworkAttribute("Bootstrap5")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("FitnessTracker.WebUI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+abf3b7ed5600e14f6d3b4f9fe8712fe00a480147")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d297e30732bc14655bcfa594e572d8543031bab6")]
 [assembly: System.Reflection.AssemblyProductAttribute("FitnessTracker.WebUI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FitnessTracker.WebUI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
