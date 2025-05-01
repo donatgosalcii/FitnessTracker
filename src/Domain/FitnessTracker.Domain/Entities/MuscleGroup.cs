@@ -1,10 +1,10 @@
-using System.ComponentModel.DataAnnotations; // Add this
+using System.ComponentModel.DataAnnotations; 
 
 namespace FitnessTracker.Domain.Entities;
 
 public class MuscleGroup
 {
-    public int Id { get; set; } // Primary Key
+    public int Id { get; set; } 
 
     [Display(Name = "Muscle Group Name")] 
     [StringLength(100)]

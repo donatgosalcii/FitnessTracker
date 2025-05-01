@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations; // Add this
+using System.ComponentModel.DataAnnotations;
 
 namespace FitnessTracker.Domain.Entities;
 

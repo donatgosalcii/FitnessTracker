@@ -1,4 +1,3 @@
-// src/Domain/FitnessTracker.Domain/Entities/WorkoutSet.cs
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema; // For [Column]
 
