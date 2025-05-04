@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using FitnessTracker.Domain.Entities; 
+using FitnessTracker.Domain.Entities;
 using FitnessTracker.Infrastructure.Data;
+using FitnessTracker.Application.Interfaces; 
+using FitnessTracker.Application.Services; 
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +26,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 
 builder.Services.AddRazorPages();
 
+builder.Services.AddScoped<IUserService, UserService>(); // <-- ADDED THIS LINE
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -31,14 +35,15 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error");
 }
 
-app.UseStaticFiles(); 
+app.UseStaticFiles();
 
 app.UseRouting();
 
-app.UseAuthentication(); 
-app.UseAuthorization(); 
+app.UseAuthentication();
+app.UseAuthorization();
 
-app.MapRazorPages(); 
+app.MapRazorPages();
+app.MapControllers(); 
 
 using (var scope = app.Services.CreateScope())
 {
@@ -47,30 +52,18 @@ using (var scope = app.Services.CreateScope())
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-
-        string[] roleNames = { "Admin", "User" }; 
-
+        string[] roleNames = { "Admin", "User" };
         logger.LogInformation("Starting role seeding...");
-
         foreach (var roleName in roleNames)
         {
             var roleExist = await roleManager.RoleExistsAsync(roleName);
             if (!roleExist)
             {
                 var roleResult = await roleManager.CreateAsync(new IdentityRole(roleName));
-                if (roleResult.Succeeded)
-                {
-                    logger.LogInformation($"Role '{roleName}' created successfully.");
-                }
-                else
-                {
-                    logger.LogError($"Error creating role '{roleName}'. Errors: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
-                }
+                if (roleResult.Succeeded) { logger.LogInformation($"Role '{roleName}' created successfully."); }
+                else { logger.LogError($"Error creating role '{roleName}'. Errors: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}"); }
             }
-            else
-            {
-                 logger.LogInformation($"Role '{roleName}' already exists.");
-            }
+            else { logger.LogInformation($"Role '{roleName}' already exists."); }
         }
          logger.LogInformation("Finished role seeding.");
     }
@@ -81,4 +74,4 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.Run(); 
+app.Run();
