@@ -913,7 +913,10 @@
           "Microsoft.Extensions.Identity.Stores": "8.0.4"
         },
         "runtime": {
-          "FitnessTracker.Domain.dll": {}
+          "FitnessTracker.Domain.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       }
     }
