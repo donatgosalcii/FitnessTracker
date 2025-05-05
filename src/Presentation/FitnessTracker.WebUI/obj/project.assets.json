@@ -1926,6 +1926,10 @@
       "FitnessTracker.Application/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
+        "dependencies": {
+          "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Application/Domain/FitnessTracker.Domain/FitnessTracker.Domain.csproj": "1.0.0",
+          "FitnessTracker.Domain": "1.0.0"
+        },
         "compile": {
           "bin/placeholder/FitnessTracker.Application.dll": {}
         },
@@ -1951,6 +1955,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
+          "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Infrastructure/Application/FitnessTracker.Application/FitnessTracker.Application.csproj": "1.0.0",
           "FitnessTracker.Domain": "1.0.0",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.4",
           "Microsoft.EntityFrameworkCore": "8.0.4",
@@ -5132,6 +5137,11 @@
         "warnAsError": [
           "NU1605"
         ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
       }
     },
     "frameworks": {
@@ -5176,8 +5186,28 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.115/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/snap/dotnet-sdk/current/sdk/8.0.407/PortableRuntimeIdentifierGraph.json"
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1104",
+      "level": "Error",
+      "message": "Unable to find project '/home/donatgosalci/Documents/Projects/FitnessTracker/src/Application/Domain/FitnessTracker.Domain/FitnessTracker.Domain.csproj'. Check that the project reference is valid and that the project file exists.",
+      "libraryId": "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Application/Domain/FitnessTracker.Domain/FitnessTracker.Domain.csproj",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1104",
+      "level": "Error",
+      "message": "Unable to find project '/home/donatgosalci/Documents/Projects/FitnessTracker/src/Infrastructure/Application/FitnessTracker.Application/FitnessTracker.Application.csproj'. Check that the project reference is valid and that the project file exists.",
+      "libraryId": "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Infrastructure/Application/FitnessTracker.Application/FitnessTracker.Application.csproj",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
 }

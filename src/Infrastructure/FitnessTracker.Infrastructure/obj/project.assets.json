@@ -3691,6 +3691,7 @@
   },
   "projectFileDependencyGroups": {
     "net8.0": [
+      "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Infrastructure/Application/FitnessTracker.Application/FitnessTracker.Application.csproj",
       "FitnessTracker.Domain >= 1.0.0",
       "Microsoft.AspNetCore.Identity.EntityFrameworkCore >= 8.0.4",
       "Microsoft.EntityFrameworkCore >= 8.0.4",
@@ -3728,6 +3729,9 @@
           "projectReferences": {
             "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Domain/FitnessTracker.Domain/FitnessTracker.Domain.csproj": {
               "projectPath": "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Domain/FitnessTracker.Domain/FitnessTracker.Domain.csproj"
+            },
+            "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Infrastructure/Application/FitnessTracker.Application/FitnessTracker.Application.csproj": {
+              "projectPath": "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Infrastructure/Application/FitnessTracker.Application/FitnessTracker.Application.csproj"
             }
           }
         }
@@ -3736,6 +3740,11 @@
         "warnAsError": [
           "NU1605"
         ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
       }
     },
     "frameworks": {
@@ -3787,8 +3796,19 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.115/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/snap/dotnet-sdk/current/sdk/8.0.407/PortableRuntimeIdentifierGraph.json"
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1104",
+      "level": "Error",
+      "message": "Unable to find project '/home/donatgosalci/Documents/Projects/FitnessTracker/src/Infrastructure/Application/FitnessTracker.Application/FitnessTracker.Application.csproj'. Check that the project reference is valid and that the project file exists.",
+      "libraryId": "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Infrastructure/Application/FitnessTracker.Application/FitnessTracker.Application.csproj",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
 }

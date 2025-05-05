@@ -32,6 +32,11 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
         }
       },
       "frameworks": {
@@ -63,7 +68,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.115/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/snap/dotnet-sdk/current/sdk/8.0.407/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
@@ -91,6 +96,9 @@
             "projectReferences": {
               "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Domain/FitnessTracker.Domain/FitnessTracker.Domain.csproj": {
                 "projectPath": "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Domain/FitnessTracker.Domain/FitnessTracker.Domain.csproj"
+              },
+              "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Infrastructure/Application/FitnessTracker.Application/FitnessTracker.Application.csproj": {
+                "projectPath": "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Infrastructure/Application/FitnessTracker.Application/FitnessTracker.Application.csproj"
               }
             }
           }
@@ -99,6 +107,11 @@
           "warnAsError": [
             "NU1605"
           ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
         }
       },
       "frameworks": {
@@ -150,7 +163,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.115/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/snap/dotnet-sdk/current/sdk/8.0.407/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
