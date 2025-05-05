@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-  <ProjectReference Include="../Domain/FitnessTracker.Domain/FitnessTracker.Domain.csproj" /> 
-  <ProjectReference Include="..\..\Domain\FitnessTracker.Domain\FitnessTracker.Domain.csproj" /> 
+    <ProjectReference Include="../../Domain/FitnessTracker.Domain/FitnessTracker.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>

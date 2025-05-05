@@ -26,9 +26,6 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Application/Domain/FitnessTracker.Domain/FitnessTracker.Domain.csproj": {
-                "projectPath": "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Application/Domain/FitnessTracker.Domain/FitnessTracker.Domain.csproj"
-              },
               "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Domain/FitnessTracker.Domain/FitnessTracker.Domain.csproj": {
                 "projectPath": "/home/donatgosalci/Documents/Projects/FitnessTracker/src/Domain/FitnessTracker.Domain/FitnessTracker.Domain.csproj"
               }
@@ -65,7 +62,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/snap/dotnet-sdk/current/sdk/8.0.407/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/snap/dotnet-sdk/256/sdk/8.0.407/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
@@ -133,7 +130,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/snap/dotnet-sdk/current/sdk/8.0.407/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/snap/dotnet-sdk/256/sdk/8.0.407/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

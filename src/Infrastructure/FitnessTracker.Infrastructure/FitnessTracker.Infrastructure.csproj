@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../Domain/FitnessTracker.Domain/FitnessTracker.Domain.csproj" />
-    <ProjectReference Include="../Application/FitnessTracker.Application/FitnessTracker.Application.csproj" />
+    <ProjectReference Include="../../Application/FitnessTracker.Application/FitnessTracker.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>
