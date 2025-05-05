@@ -1250,6 +1250,7 @@
       },
       "FitnessTracker.Infrastructure/1.0.0": {
         "dependencies": {
+          "FitnessTracker.Application": "1.0.0",
           "FitnessTracker.Domain": "1.0.0",
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.4",
           "Microsoft.EntityFrameworkCore": "8.0.4",

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FitnessTracker.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0e81b126fa7428c50f442807029a853fcb3ce3fe")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7464d8967d17a390ed76b2e95ea60a96fe6328ce")]
 [assembly: System.Reflection.AssemblyProductAttribute("FitnessTracker.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FitnessTracker.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
