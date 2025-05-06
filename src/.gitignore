@@ -1,19 +1,7 @@
-# Ignore build outputs
 bin/
 obj/
-
-# Ignore Rider project files
-.idea/
-*.sln.iml
-
-# Ignore VS/VS Code files
-.vs/
-*.user
-*.suo
-
-# Ignore other common stuff
-*.log
-*.db
-*.sqlite
-
-
+*.dll
+*.exe
+*.cache
+*.g.cs
+*.editorconfig
