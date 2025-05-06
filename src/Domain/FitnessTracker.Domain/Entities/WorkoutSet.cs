@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema; // For [Column]
+using System.ComponentModel.DataAnnotations.Schema; 
 
 namespace FitnessTracker.Domain.Entities;
 
