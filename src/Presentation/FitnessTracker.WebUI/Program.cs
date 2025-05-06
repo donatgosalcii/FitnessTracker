@@ -2,10 +2,20 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using FitnessTracker.Domain.Entities;
 using FitnessTracker.Infrastructure.Data;
-using FitnessTracker.Application.Interfaces; 
-using FitnessTracker.Application.Services; 
+using FitnessTracker.Application.Interfaces;
+using FitnessTracker.Application.Services;
+using FitnessTracker.Infrastructure.Settings;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.Extensions.Options;
+using FitnessTracker.Infrastructure.Authentication; 
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<JwtSettings>(
+    builder.Configuration.GetSection(JwtSettings.SectionName)
+);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -19,31 +29,64 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Password.RequireUppercase = true;
     options.Password.RequireNonAlphanumeric = true;
     options.Password.RequiredLength = 8;
+    options.User.RequireUniqueEmail = true;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders()
-.AddDefaultUI();
+.AddDefaultTokenProviders();
 
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer();
+builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+    .Configure<IOptions<JwtSettings>, IWebHostEnvironment>((bearerOptions, jwtOptions, hostingEnv) =>
+    {
+        var settings = jwtOptions.Value; 
+
+        bearerOptions.SaveToken = true;
+        bearerOptions.RequireHttpsMetadata = hostingEnv.IsProduction();
+        bearerOptions.TokenValidationParameters = new TokenValidationParameters()
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = settings.Issuer,
+            ValidAudience = settings.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.Secret)),
+            ClockSkew = TimeSpan.Zero 
+        };
+    });
+
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+
+builder.Services.AddControllers();
 builder.Services.AddRazorPages();
-
-builder.Services.AddScoped<IUserService, UserService>(); // <-- ADDED THIS LINE
 
 var app = builder.Build();
 
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
 {
     app.UseExceptionHandler("/Error");
 }
 
+app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
-app.MapControllers(); 
+app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
 {

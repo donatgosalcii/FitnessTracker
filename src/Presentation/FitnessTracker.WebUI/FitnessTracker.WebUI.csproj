@@ -1,11 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Application\FitnessTracker.Application\FitnessTracker.Application.csproj" />
-    <ProjectReference Include="..\..\Infrastructure\FitnessTracker.Infrastructure\FitnessTracker.Infrastructure.csproj" />
+    <ProjectReference Include="../../Application/FitnessTracker.Application/FitnessTracker.Application.csproj" />
+    <ProjectReference Include="../../Infrastructure/FitnessTracker.Infrastructure/FitnessTracker.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.4">

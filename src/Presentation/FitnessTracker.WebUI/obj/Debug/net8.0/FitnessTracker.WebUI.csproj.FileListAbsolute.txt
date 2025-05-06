@@ -9,6 +9,7 @@
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/bin/Debug/net8.0/Azure.Core.dll
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/bin/Debug/net8.0/Azure.Identity.dll
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/bin/Debug/net8.0/Humanizer.dll
+/home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/bin/Debug/net8.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/bin/Debug/net8.0/Microsoft.AspNetCore.Cryptography.Internal.dll
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/bin/Debug/net8.0/Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/bin/Debug/net8.0/Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
@@ -181,9 +182,9 @@
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/obj/Debug/net8.0/scopedcss/Pages/Shared/_Layout.cshtml.rz.scp.css
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/obj/Debug/net8.0/scopedcss/bundle/FitnessTracker.WebUI.styles.css
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/obj/Debug/net8.0/scopedcss/projectbundle/FitnessTracker.WebUI.bundle.scp.css
+/home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/obj/Debug/net8.0/FitnessT.CC7892A8.Up2Date
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/obj/Debug/net8.0/FitnessTracker.WebUI.dll
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/obj/Debug/net8.0/refint/FitnessTracker.WebUI.dll
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/obj/Debug/net8.0/FitnessTracker.WebUI.pdb
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/obj/Debug/net8.0/FitnessTracker.WebUI.genruntimeconfig.cache
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/obj/Debug/net8.0/ref/FitnessTracker.WebUI.dll
-/home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/obj/Debug/net8.0/FitnessT.CC7892A8.Up2Date

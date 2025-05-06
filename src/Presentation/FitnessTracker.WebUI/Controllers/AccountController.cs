@@ -1,53 +1,65 @@
-using FitnessTracker.Application.DTOs.Account;
+using FitnessTracker.Application.DTOs;
 using FitnessTracker.Application.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FitnessTracker.WebUI.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class AccountController : ControllerBase
+namespace FitnessTracker.WebUI.Controllers
 {
-    private readonly IUserService _userService;
-    private readonly ILogger<AccountController> _logger;
-
-    public AccountController(IUserService userService, ILogger<AccountController> logger)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AccountController : ControllerBase
     {
-        _userService = userService;
-        _logger = logger;
-    }
+        private readonly IUserService _userService;
+        private readonly ILogger<AccountController> _logger;
 
-    [HttpPost("register")]
-    [AllowAnonymous]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)] 
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Register([FromBody] UserRegistrationDto registrationDto)
-    {
-        try
+        public AccountController(IUserService userService, ILogger<AccountController> logger)
         {
+            _userService = userService;
+            _logger = logger;
+        }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(UserRegistrationDto registrationDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var result = await _userService.RegisterUserAsync(registrationDto);
 
             if (result.Succeeded)
             {
-                return Ok(new { Message = "Registration successful" });
+                _logger.LogInformation("User {Email} registered successfully.", registrationDto.Email);
+                return Ok(new { Message = "User registered successfully." });
             }
-            else
+
+            foreach (var error in result.Errors)
             {
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(error.Code ?? string.Empty, error.Description);
-                }
+                ModelState.AddModelError(error.Code, error.Description);
+            }
+            _logger.LogWarning("User registration failed for {Email}. Errors: {Errors}", registrationDto.Email, string.Join(", ", result.Errors.Select(e => e.Description)));
+            return BadRequest(ModelState);
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(UserLoginDto loginDto)
+        {
+            if (!ModelState.IsValid)
+            {
                 return BadRequest(ModelState);
             }
-        }
-        catch (Exception ex)
-        {
-             _logger.LogError(ex, "Unexpected error during registration for {Email}", registrationDto.Email);
-             return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred during registration." });
+
+            _logger.LogInformation("Login attempt received for {Email}", loginDto.Email);
+            var loginResponse = await _userService.LoginUserAsync(loginDto);
+
+            if (loginResponse.IsSuccess && loginResponse.Token != null)
+            {
+                _logger.LogInformation("Login successful for {Email}, token issued.", loginDto.Email);
+                return Ok(loginResponse);
+            }
+
+            _logger.LogWarning("Login failed for {Email}. Reason: {Reason}", loginDto.Email, loginResponse.Message);
+            return Unauthorized(new { Message = loginResponse.Message });
         }
     }
-
-    // Add Login / Logout endpoints here later...
-}
+}//will be refactored in the future
