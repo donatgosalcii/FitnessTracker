@@ -1,4 +1,4 @@
-namespace FitnessTracker.Application.DTOs
+namespace FitnessTracker.Application.DTOs.Accounts
 {
     public class LoginResponseDto
     {

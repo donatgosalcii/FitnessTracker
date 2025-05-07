@@ -1,25 +1,27 @@
+using FitnessTracker.Application.Interfaces;
 using FitnessTracker.Domain.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace FitnessTracker.Infrastructure.Data;
-
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+namespace FitnessTracker.Infrastructure.Data
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options)
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplicationDbContext
     {
-    }
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options)
+        {
+        }
 
-    public DbSet<MuscleGroup> MuscleGroups { get; set; }
-    public DbSet<Exercise> Exercises { get; set; }
-    public DbSet<Workout> Workouts { get; set; }
-    public DbSet<WorkoutSet> WorkoutSets { get; set; }
+        public DbSet<MuscleGroup> MuscleGroups { get; set; } = null!;
+        public DbSet<Exercise> Exercises { get; set; } = null!;
+        public DbSet<Workout> Workouts { get; set; } = null!;
+        public DbSet<WorkoutSet> WorkoutSets { get; set; } = null!;
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        base.OnModelCreating(modelBuilder);
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
 
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(MuscleGroup).Assembly);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(FitnessTracker.Domain.Entities.MuscleGroup).Assembly);
+        }
     }
 }

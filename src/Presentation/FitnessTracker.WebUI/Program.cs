@@ -9,7 +9,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.Extensions.Options;
-using FitnessTracker.Infrastructure.Authentication; 
+using FitnessTracker.Infrastructure.Authentication;
+using FitnessTracker.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,9 @@ builder.Services.Configure<JwtSettings>(
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
+
+builder.Services.AddScoped<IApplicationDbContext>(provider =>
+    provider.GetRequiredService<ApplicationDbContext>());
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
@@ -44,7 +48,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
     .Configure<IOptions<JwtSettings>, IWebHostEnvironment>((bearerOptions, jwtOptions, hostingEnv) =>
     {
-        var settings = jwtOptions.Value; 
+        var settings = jwtOptions.Value;
 
         bearerOptions.SaveToken = true;
         bearerOptions.RequireHttpsMetadata = hostingEnv.IsProduction();
@@ -57,12 +61,14 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
             ValidIssuer = settings.Issuer,
             ValidAudience = settings.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.Secret)),
-            ClockSkew = TimeSpan.Zero 
+            ClockSkew = TimeSpan.Zero
         };
     });
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+builder.Services.AddScoped<IMuscleGroupRepository, MuscleGroupRepository>();
+builder.Services.AddScoped<IMuscleGroupService, MuscleGroupService>();
 
 builder.Services.AddControllers();
 builder.Services.AddRazorPages();

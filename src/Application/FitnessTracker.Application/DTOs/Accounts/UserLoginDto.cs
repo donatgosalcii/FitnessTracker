@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace FitnessTracker.Application.DTOs
+namespace FitnessTracker.Application.DTOs.Accounts
 {
     public class UserLoginDto
     {

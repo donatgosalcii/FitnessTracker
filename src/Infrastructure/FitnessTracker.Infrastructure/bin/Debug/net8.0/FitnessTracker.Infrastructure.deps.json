@@ -914,10 +914,7 @@
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.4"
         },
         "runtime": {
-          "FitnessTracker.Application.dll": {
-            "assemblyVersion": "1.0.0",
-            "fileVersion": "1.0.0.0"
-          }
+          "FitnessTracker.Application.dll": {}
         }
       },
       "FitnessTracker.Domain/1.0.0": {
@@ -926,10 +923,7 @@
           "Microsoft.Extensions.Identity.Stores": "8.0.4"
         },
         "runtime": {
-          "FitnessTracker.Domain.dll": {
-            "assemblyVersion": "1.0.0",
-            "fileVersion": "1.0.0.0"
-          }
+          "FitnessTracker.Domain.dll": {}
         }
       }
     }

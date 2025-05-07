@@ -9,7 +9,7 @@
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Application/FitnessTracker.Application/obj/Debug/net8.0/FitnessTracker.Application.AssemblyInfo.cs
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Application/FitnessTracker.Application/obj/Debug/net8.0/FitnessTracker.Application.csproj.CoreCompileInputs.cache
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Application/FitnessTracker.Application/obj/Debug/net8.0/FitnessTracker.Application.sourcelink.json
-/home/donatgosalci/Documents/Projects/FitnessTracker/src/Application/FitnessTracker.Application/obj/Debug/net8.0/FitnessT.BE9B4996.Up2Date
+/home/donatgosalci/Documents/Projects/FitnessTracker/src/Application/FitnessTracker.Application/obj/Debug/net8.0/FitnessTracker.Application.csproj.CopyComplete
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Application/FitnessTracker.Application/obj/Debug/net8.0/FitnessTracker.Application.dll
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Application/FitnessTracker.Application/obj/Debug/net8.0/refint/FitnessTracker.Application.dll
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Application/FitnessTracker.Application/obj/Debug/net8.0/FitnessTracker.Application.pdb

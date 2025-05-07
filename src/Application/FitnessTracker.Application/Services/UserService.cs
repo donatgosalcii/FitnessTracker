@@ -1,4 +1,4 @@
-using FitnessTracker.Application.DTOs;
+using FitnessTracker.Application.DTOs.Accounts;
 using FitnessTracker.Application.Interfaces;
 using FitnessTracker.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
