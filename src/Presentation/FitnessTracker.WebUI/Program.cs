@@ -71,6 +71,8 @@ builder.Services.AddScoped<IMuscleGroupRepository, MuscleGroupRepository>();
 builder.Services.AddScoped<IMuscleGroupService, MuscleGroupService>();
 builder.Services.AddScoped<IExerciseRepository, ExerciseRepository>();
 builder.Services.AddScoped<IExerciseService, ExerciseService>();
+builder.Services.AddScoped<IWorkoutRepository, WorkoutRepository>();
+builder.Services.AddScoped<IWorkoutService, WorkoutService>();
 
 builder.Services.AddControllers();
 builder.Services.AddRazorPages();
