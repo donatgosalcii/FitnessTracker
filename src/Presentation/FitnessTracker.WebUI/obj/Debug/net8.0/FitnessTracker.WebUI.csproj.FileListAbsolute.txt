@@ -182,7 +182,7 @@
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/obj/Debug/net8.0/scopedcss/Pages/Shared/_Layout.cshtml.rz.scp.css
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/obj/Debug/net8.0/scopedcss/bundle/FitnessTracker.WebUI.styles.css
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/obj/Debug/net8.0/scopedcss/projectbundle/FitnessTracker.WebUI.bundle.scp.css
-/home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/obj/Debug/net8.0/FitnessT.CC7892A8.Up2Date
+/home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/obj/Debug/net8.0/FitnessTracker.WebUI.csproj.CopyComplete
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/obj/Debug/net8.0/FitnessTracker.WebUI.dll
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/obj/Debug/net8.0/refint/FitnessTracker.WebUI.dll
 /home/donatgosalci/Documents/Projects/FitnessTracker/src/Presentation/FitnessTracker.WebUI/obj/Debug/net8.0/FitnessTracker.WebUI.pdb
