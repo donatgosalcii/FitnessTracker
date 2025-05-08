@@ -7,8 +7,7 @@ public interface IApplicationDbContext
 {
     DbSet<MuscleGroup> MuscleGroups { get; }
     DbSet<Exercise> Exercises { get; }
-    DbSet<Workout> Workouts { get; } 
-
+    DbSet<Workout> Workouts { get; }
     DbSet<WorkoutSet> WorkoutSets { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

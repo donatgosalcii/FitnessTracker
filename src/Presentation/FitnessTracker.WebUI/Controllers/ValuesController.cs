@@ -1,11 +1,12 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization; 
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims; 
+using System.Security.Claims;
 
 namespace FitnessTracker.WebUI.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")] 
+    [Route("api/[controller]")]
     public class ValuesController : ControllerBase
     {
         private readonly ILogger<ValuesController> _logger;
@@ -16,14 +17,15 @@ namespace FitnessTracker.WebUI.Controllers
         }
 
         [HttpGet("public")]
+        [AllowAnonymous]
         public IActionResult GetPublicData()
         {
             _logger.LogInformation("Accessed /api/values/public");
             return Ok(new { Message = "This is public data, anyone can see this!" });
         }
-      
+
         [HttpGet("secure")]
-        [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] 
         public IActionResult GetSecureData()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -42,7 +44,7 @@ namespace FitnessTracker.WebUI.Controllers
         }
 
         [HttpGet("admin")]
-        [Authorize(Roles = "Admin")] 
+        [Authorize(Roles = "Admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)] 
         public IActionResult GetAdminData()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

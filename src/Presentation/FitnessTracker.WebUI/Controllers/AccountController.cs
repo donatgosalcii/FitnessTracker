@@ -1,6 +1,9 @@
 using FitnessTracker.Application.DTOs.Accounts;
 using FitnessTracker.Application.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FitnessTracker.WebUI.Controllers
 {
@@ -18,6 +21,7 @@ namespace FitnessTracker.WebUI.Controllers
         }
 
         [HttpPost("register")]
+        [AllowAnonymous]
         public async Task<IActionResult> Register(UserRegistrationDto registrationDto)
         {
             if (!ModelState.IsValid)
@@ -42,6 +46,7 @@ namespace FitnessTracker.WebUI.Controllers
         }
 
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<IActionResult> Login(UserLoginDto loginDto)
         {
             if (!ModelState.IsValid)
@@ -61,5 +66,15 @@ namespace FitnessTracker.WebUI.Controllers
             _logger.LogWarning("Login failed for {Email}. Reason: {Reason}", loginDto.Email, loginResponse.Message);
             return Unauthorized(new { Message = loginResponse.Message });
         }
+
+        [HttpGet("me")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        public IActionResult GetCurrentUser()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var email = User.FindFirstValue(ClaimTypes.Email);
+            _logger.LogInformation("User {UserId} accessed /api/account/me endpoint.", userId);
+            return Ok(new { UserId = userId, Email = email });
+        }
     }
-}//will be refactored in the future
+}
