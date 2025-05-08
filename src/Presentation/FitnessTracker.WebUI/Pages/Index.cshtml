@@ -4,7 +4,33 @@
     ViewData["Title"] = "Home page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@if (Model.IsUserLoggedIn)
+{
+    <div class="text-center">
+        <h1 class="display-4">Welcome back, @Model.UserFirstName!</h1>
+        <hr class="my-4">
+
+        <p class="lead">What would you like to do?</p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <a asp-page="/Workouts/Log" class="btn btn-primary btn-lg px-4 gap-3">Log New Workout</a> @* TODO: Create this page *@
+            <a asp-page="/Workouts/Index" class="btn btn-outline-secondary btn-lg px-4">View Workout History</a> @* TODO: Create this page *@
+        </div>
+        <div class="mt-4">
+            <a asp-page="/Exercises/Index" class="btn btn-sm btn-info">Manage Exercises</a> @* TODO: Create this page *@
+        </div>
+    </div>
+}
+else
+{
+    <div class="text-center">
+        <h1 class="display-4">Welcome to FitnessTracker</h1>
+        <p>Your personal companion for tracking workouts and achieving your fitness goals.</p>
+        <hr class="my-4">
+        <p class="lead">Get started by logging in or registering a new account.</p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <a asp-page="/Account/Login" class="btn btn-primary btn-lg px-4 gap-3">Login</a>
+            <a asp-page="/Account/Register" class="btn btn-outline-secondary btn-lg px-4">Register</a>
+        </div>
+        <p class="mt-5"><a href="https://learn.microsoft.com/aspnet/core">Learn about building Web apps with ASP.NET Core</a>.</p>
+    </div>
+}
