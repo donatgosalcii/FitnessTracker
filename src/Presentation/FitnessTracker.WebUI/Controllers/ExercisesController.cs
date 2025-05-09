@@ -1,13 +1,14 @@
 using FitnessTracker.Application.DTOs.Exercise;
 using FitnessTracker.Application.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer; 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FitnessTracker.WebUI.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")] 
-    [Authorize] 
+    [Route("api/[controller]")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ExercisesController : ControllerBase
     {
         private readonly IExerciseService _exerciseService;
@@ -42,7 +43,7 @@ namespace FitnessTracker.WebUI.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")] // Only Admins can create
+        [Authorize(Roles = "Admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<ExerciseDto>> CreateExercise(CreateExerciseDto createDto)
         {
             if (!ModelState.IsValid)
@@ -54,17 +55,18 @@ namespace FitnessTracker.WebUI.Controllers
             try
             {
                 var createdExercise = await _exerciseService.CreateExerciseAsync(createDto);
+                 _logger.LogInformation("Exercise created successfully with ID {Id}", createdExercise.Id);
                 return CreatedAtAction(nameof(GetExerciseById), new { id = createdExercise.Id }, createdExercise);
             }
-            catch (KeyNotFoundException ex) 
+            catch (KeyNotFoundException ex)
             {
-                _logger.LogWarning("Failed to create exercise: {ErrorMessage}", ex.Message);
-                return BadRequest(new { Message = ex.Message }); 
+                _logger.LogWarning("Failed to create exercise (e.g., MuscleGroup not found): {ErrorMessage}", ex.Message);
+                return BadRequest(new { Message = ex.Message });
             }
-            catch (InvalidOperationException ex) 
+            catch (InvalidOperationException ex)
             {
-                _logger.LogWarning("Failed to create exercise: {ErrorMessage}", ex.Message);
-                return Conflict(new { Message = ex.Message }); 
+                _logger.LogWarning("Failed to create exercise (e.g., duplicate name): {ErrorMessage}", ex.Message);
+                return Conflict(new { Message = ex.Message });
             }
             catch (System.Exception ex)
             {
@@ -74,7 +76,7 @@ namespace FitnessTracker.WebUI.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<ExerciseDto>> UpdateExercise(int id, UpdateExerciseDto updateDto)
         {
             if (!ModelState.IsValid)
@@ -92,16 +94,17 @@ namespace FitnessTracker.WebUI.Controllers
                      _logger.LogWarning("Update failed: Exercise with ID: {Id} not found.", id);
                     return NotFound(new { Message = $"Exercise with ID {id} not found." });
                 }
+                 _logger.LogInformation("Exercise ID {Id} updated successfully.", id);
                 return Ok(updatedExercise);
             }
             catch (KeyNotFoundException ex)
             {
-                _logger.LogWarning("Failed to update exercise ID {Id}: {ErrorMessage}", id, ex.Message);
-                return BadRequest(new { Message = ex.Message }); 
+                _logger.LogWarning("Failed to update exercise ID {Id} (e.g., MuscleGroup not found): {ErrorMessage}", id, ex.Message);
+                return BadRequest(new { Message = ex.Message });
             }
-            catch (InvalidOperationException ex) 
+            catch (InvalidOperationException ex)
             {
-                 _logger.LogWarning("Failed to update exercise ID {Id}: {ErrorMessage}", id, ex.Message);
+                 _logger.LogWarning("Failed to update exercise ID {Id} (e.g., duplicate name): {ErrorMessage}", id, ex.Message);
                 return Conflict(new { Message = ex.Message });
             }
              catch (System.Exception ex)
@@ -112,7 +115,7 @@ namespace FitnessTracker.WebUI.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")] 
+        [Authorize(Roles = "Admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> DeleteExercise(int id)
         {
             _logger.LogInformation("Attempting to delete exercise with ID: {Id}", id);
@@ -121,7 +124,8 @@ namespace FitnessTracker.WebUI.Controllers
                 var success = await _exerciseService.DeleteExerciseAsync(id);
                 if (success)
                 {
-                    return NoContent(); 
+                    _logger.LogInformation("Exercise ID {Id} deleted successfully.", id);
+                    return NoContent();
                 }
                 else
                 {
