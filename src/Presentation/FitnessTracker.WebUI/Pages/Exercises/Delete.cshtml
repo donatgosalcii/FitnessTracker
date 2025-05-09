@@ -1,0 +1,84 @@
+@page "{id:int}" 
+@model FitnessTracker.WebUI.Pages.Exercises.DeleteModel
+@{
+    ViewData["Title"] = "Delete Exercise";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (Model.Exercise != null)
+{
+    var exercise = Model.Exercise;
+
+    <h3 class="text-danger">Are you sure you want to delete this exercise?</h3>
+    <p class="text-muted">This action cannot be undone.</p>
+    
+    <div>
+        <h4>Exercise Details:</h4>
+        <hr />
+        <dl class="row">
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => exercise.Id)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => exercise.Id)
+            </dd>
+
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => exercise.Name)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => exercise.Name)
+            </dd>
+
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => exercise.Description)
+            </dt>
+            <dd class="col-sm-9">
+                @(string.IsNullOrWhiteSpace(exercise.Description) ? "N/A" : exercise.Description)
+            </dd>
+
+            <dt class="col-sm-3">
+                Associated Muscle Groups
+            </dt>
+            <dd class="col-sm-9">
+                @if (exercise.MuscleGroups != null && exercise.MuscleGroups.Any())
+                {
+                    @string.Join(", ", exercise.MuscleGroups.Select(mg => mg.Name))
+                }
+                else
+                {
+                    <text>None</text>
+                }
+            </dd>
+        </dl>
+        
+        <form method="post">
+            <input type="hidden" asp-for="Id" /> 
+            
+            <div class="mt-4">
+                <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                <a asp-page="./Index" class="btn btn-secondary ms-2">No, Cancel</a>
+            </div>
+        </form>
+    </div>
+}
+else
+{
+    <div class="alert alert-warning mt-3" role="alert">
+        Exercise not found or could not be loaded for deletion. Please return to the <a asp-page="./Index">list of exercises</a>.
+    </div>
+}
+
+@if (!ViewData.ModelState.IsValid && ViewData.ModelState[string.Empty] != null && ViewData.ModelState[string.Empty]!.Errors.Any())
+{
+    <div class="text-danger mt-3" role="alert">
+        <h5>Errors:</h5>
+        <ul>
+            @foreach(var error in ViewData.ModelState[string.Empty]!.Errors)
+            {
+                <li>@error.ErrorMessage</li>
+            }
+        </ul>
+    </div>
+}

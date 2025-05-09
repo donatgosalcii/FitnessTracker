@@ -1,0 +1,64 @@
+@page
+@model FitnessTracker.WebUI.Pages.Exercises.CreateModel
+@{
+    ViewData["Title"] = "Create New Exercise";
+}
+
+<h1>@ViewData["Title"]</h1>
+<h4>Add a new exercise to the system.</h4>
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+            
+            @if (ViewData.ModelState.TryGetValue("MuscleGroupLoadError", out var muscleGroupLoadErrorEntry) && muscleGroupLoadErrorEntry.Errors.Any())
+            {
+                <div class="alert alert-warning">
+                    @foreach (var error in muscleGroupLoadErrorEntry.Errors)
+                    {
+                        <p>@error.ErrorMessage</p>
+                    }
+                    <p>Please try again later or contact support if the issue persists. You can still attempt to create an exercise, but muscle group selection might be unavailable.</p>
+                </div>
+            }
+
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Name" class="form-control" placeholder="Exercise Name" />
+                <label asp-for="Input.Name"></label>
+                <span asp-validation-for="Input.Name" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <textarea asp-for="Input.Description" class="form-control" placeholder="Exercise Description" style="height: 100px"></textarea>
+                <label asp-for="Input.Description"></label>
+                <span asp-validation-for="Input.Description" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Input.SelectedMuscleGroupIds" class="form-label fw-bold">Muscle Groups</label>
+                @if (Model.AvailableMuscleGroups != null && Model.AvailableMuscleGroups.Any())
+                {
+                    <select asp-for="Input.SelectedMuscleGroupIds" asp-items="Model.AvailableMuscleGroups" class="form-select" multiple="multiple" size="5">
+                    </select>
+                    <small class="form-text text-muted">Hold Ctrl (or Cmd on Mac) to select multiple muscle groups.</small>
+                }
+                else
+                {
+                    <div class="alert alert-info">No muscle groups available for selection. Please add muscle groups first.</div>
+                }
+                <span asp-validation-for="Input.SelectedMuscleGroupIds" class="text-danger"></span>
+            </div>
+            
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Create Exercise</button>
+                <a asp-page="./Index" class="btn btn-secondary ms-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
