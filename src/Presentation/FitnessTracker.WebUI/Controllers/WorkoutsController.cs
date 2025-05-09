@@ -1,15 +1,15 @@
 using FitnessTracker.Application.DTOs.Workout;
 using FitnessTracker.Application.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.IdentityModel.Tokens.Jwt; 
 using System.Security.Claims;
 
 namespace FitnessTracker.WebUI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class WorkoutsController : ControllerBase
     {
         private readonly IWorkoutService _workoutService;
@@ -23,56 +23,26 @@ namespace FitnessTracker.WebUI.Controllers
 
         private string? GetCurrentUserId()
         {
-            string? userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!string.IsNullOrEmpty(userId))
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
             {
-                _logger.LogDebug("Found User ID using ClaimTypes.NameIdentifier.");
-                return userId;
+                _logger.LogError("User ID (ClaimTypes.NameIdentifier) not found in token for user: {UserName}", User.Identity?.Name);
             }
-
-            _logger.LogWarning("Could not find ClaimTypes.NameIdentifier, trying JwtRegisteredClaimNames.Sub.");
-            userId = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
-            if (!string.IsNullOrEmpty(userId))
+            else
             {
-                 _logger.LogDebug("Found User ID using JwtRegisteredClaimNames.Sub.");
-                return userId;
+                _logger.LogInformation("Retrieved User ID {UserId} from token.", userId);
             }
-
-            _logger.LogWarning("Could not find JwtRegisteredClaimNames.Sub, trying custom 'uid'.");
-            userId = User.FindFirstValue("uid");
-             if (!string.IsNullOrEmpty(userId))
-            {
-                 _logger.LogDebug("Found User ID using custom 'uid' claim.");
-                return userId;
-            }
-
-            _logger.LogError("Could not find any expected user ID claim ('{NameIdentifier}', '{Sub}', 'uid') in the ClaimsPrincipal.", ClaimTypes.NameIdentifier, JwtRegisteredClaimNames.Sub);
-            return null;
+            return userId;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<WorkoutSummaryDto>>> GetMyWorkouts()
         {
-            _logger.LogInformation("------ GetMyWorkouts START ------");
-            if (User?.Identity?.IsAuthenticated ?? false)
-            {
-                _logger.LogInformation("User is Authenticated. Claims found ({Count}):", User.Claims.Count());
-                foreach (var claim in User.Claims)
-                {
-                    _logger.LogInformation("  Claim Type: {ClaimType}, Value: {ClaimValue}", claim.Type, claim.Value);
-                }
-            }
-            else
-            {
-                _logger.LogWarning("User is NOT Authenticated or Identity is null.");
-            }
-             _logger.LogInformation("------ End Claims Dump ------");
-
-
             var userId = GetCurrentUserId();
             if (userId == null)
             {
-                return Unauthorized("User ID not found in token.");
+                _logger.LogWarning("GetMyWorkouts called but User ID could not be determined from token.");
+                return Unauthorized("User ID not found in token or token invalid.");
             }
 
             _logger.LogInformation("Retrieving workouts for user {UserId}", userId);
@@ -83,11 +53,11 @@ namespace FitnessTracker.WebUI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<WorkoutDetailDto>> GetWorkoutDetails(int id)
         {
-
             var userId = GetCurrentUserId();
             if (userId == null)
             {
-                return Unauthorized("User ID not found in token.");
+                 _logger.LogWarning("GetWorkoutDetails called but User ID could not be determined from token.");
+                return Unauthorized("User ID not found in token or token invalid.");
             }
 
             _logger.LogInformation("Retrieving details for workout {WorkoutId} for user {UserId}", id, userId);
@@ -96,7 +66,7 @@ namespace FitnessTracker.WebUI.Controllers
             if (workout == null)
             {
                 _logger.LogWarning("Workout {WorkoutId} not found or not owned by user {UserId}.", id, userId);
-                return NotFound(new { Message = $"Workout with ID {id} not found." });
+                return NotFound(new { Message = $"Workout with ID {id} not found or access denied." });
             }
 
             return Ok(workout);
@@ -105,11 +75,11 @@ namespace FitnessTracker.WebUI.Controllers
         [HttpPost]
         public async Task<ActionResult<WorkoutDetailDto>> LogWorkout(LogWorkoutDto logDto)
         {
-
             var userId = GetCurrentUserId();
             if (userId == null)
             {
-                return Unauthorized("User ID not found in token.");
+                _logger.LogWarning("LogWorkout called but User ID could not be determined from token.");
+                return Unauthorized("User ID not found in token or token invalid.");
             }
 
             if (!ModelState.IsValid)
@@ -121,17 +91,18 @@ namespace FitnessTracker.WebUI.Controllers
             try
             {
                 var createdWorkout = await _workoutService.LogWorkoutAsync(logDto, userId);
+                 _logger.LogInformation("Workout logged successfully with ID {WorkoutId} for user {UserId}", createdWorkout.Id, userId);
                 return CreatedAtAction(nameof(GetWorkoutDetails), new { id = createdWorkout.Id }, createdWorkout);
             }
             catch (ArgumentException ex)
             {
-                _logger.LogWarning("Failed to log workout for user {UserId}: {ErrorMessage}", userId, ex.Message);
+                _logger.LogWarning("Failed to log workout for user {UserId} due to invalid argument: {ErrorMessage}", userId, ex.Message);
                 return BadRequest(new { Message = ex.Message });
             }
             catch (KeyNotFoundException ex)
             {
-                _logger.LogWarning("Failed to log workout for user {UserId}: {ErrorMessage}", userId, ex.Message);
-                return BadRequest(new { Message = ex.Message });
+                _logger.LogWarning("Failed to log workout for user {UserId} due to KeyNotFound: {ErrorMessage}", userId, ex.Message);
+                return BadRequest(new { Message = ex.Message }); 
             }
             catch (System.Exception ex)
             {
@@ -143,11 +114,11 @@ namespace FitnessTracker.WebUI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteWorkout(int id)
         {
-
              var userId = GetCurrentUserId();
             if (userId == null)
             {
-                return Unauthorized("User ID not found in token.");
+                _logger.LogWarning("DeleteWorkout called but User ID could not be determined from token.");
+                return Unauthorized("User ID not found in token or token invalid.");
             }
 
             _logger.LogInformation("Attempting to delete workout {WorkoutId} for user {UserId}", id, userId);
@@ -156,12 +127,13 @@ namespace FitnessTracker.WebUI.Controllers
                 var success = await _workoutService.DeleteWorkoutAsync(id, userId);
                 if (success)
                 {
+                    _logger.LogInformation("Workout ID {WorkoutId} deleted successfully for user {UserId}.", id, userId);
                     return NoContent();
                 }
                 else
                 {
                     _logger.LogWarning("Delete failed: Workout {WorkoutId} not found or not owned by user {UserId}.", id, userId);
-                    return NotFound(new { Message = $"Workout with ID {id} not found." });
+                    return NotFound(new { Message = $"Workout with ID {id} not found or access denied." });
                 }
             }
             catch (System.Exception ex)
@@ -170,5 +142,6 @@ namespace FitnessTracker.WebUI.Controllers
                 return StatusCode(500, "An unexpected error occurred while deleting workout.");
             }
         }
+         // TODO: Implement PUT /api/workouts/{id} for updating workout notes or date
     }
 }
