@@ -1,0 +1,201 @@
+@page
+@model FitnessTracker.WebUI.Pages.Workouts.LogModel
+@{
+    ViewData["Title"] = "Log New Workout";
+}
+
+<h1>@ViewData["Title"]</h1>
+<p>Record the details of your completed workout session.</p>
+<hr />
+
+<form method="post" id="logWorkoutForm">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+    @if (!string.IsNullOrEmpty(Model.PageErrorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            @Model.PageErrorMessage
+        </div>
+    }
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label asp-for="Input.DatePerformed" class="form-label"></label>
+            <input asp-for="Input.DatePerformed" type="datetime-local" class="form-control" />
+            <span asp-validation-for="Input.DatePerformed" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.OverallNotes" class="form-label"></label>
+        <textarea asp-for="Input.OverallNotes" class="form-control" rows="3" placeholder="Any overall notes for this workout..."></textarea>
+        <span asp-validation-for="Input.OverallNotes" class="text-danger"></span>
+    </div>
+
+    <hr />
+    <h4 class="mt-4 mb-3">Log Your Sets</h4>
+
+    <div id="addSetSection" class="card card-body bg-light mb-4">
+        <h5>Add a New Set</h5>
+        <div class="row g-3">
+            <div class="col-md-12">
+                <label for="currentExercise" class="form-label">Exercise</label>
+                <select id="currentExercise" class="form-select" asp-items="Model.AvailableExercises">
+                    <option value="">-- Select Exercise --</option>
+                </select>
+                <input type="hidden" id="currentExerciseName" />
+            </div>
+            <div class="col-md-2">
+                <label for="currentSetNumber" class="form-label">Set #</label>
+                <input type="number" id="currentSetNumber" class="form-control" value="1" min="1" />
+            </div>
+            <div class="col-md-2">
+                <label for="currentReps" class="form-label">Reps</label>
+                <input type="number" id="currentReps" class="form-control" min="0" />
+            </div>
+            <div class="col-md-2">
+                <label for="currentWeight" class="form-label">Weight</label>
+                <input type="number" id="currentWeight" step="any" class="form-control" min="0" />
+            </div>
+            <div class="col-md-2">
+                <label for="currentDuration" class="form-label">Duration (s)</label>
+                <input type="number" id="currentDuration" class="form-control" min="0" />
+            </div>
+            <div class="col-md-2">
+                <label for="currentDistance" class="form-label">Distance</label>
+                <input type="number" id="currentDistance" step="any" class="form-control" min="0" />
+            </div>
+            <div class="col-md-12">
+                <label for="currentSetNotes" class="form-label">Set Notes</label>
+                <input type="text" id="currentSetNotes" class="form-control" placeholder="Notes for this specific set..." />
+            </div>
+        </div>
+        <div class="mt-3 text-end">
+            <button type="button" id="btnAddSet" class="btn btn-info">Add Set to Workout</button>
+        </div>
+        <div id="addSetError" class="text-danger mt-2"></div>
+    </div>
+
+
+    <h5 class="mt-4">Current Sets in Workout</h5>
+    <div id="loggedSetsContainer" class="mb-3">
+        <p id="noSetsMessage">No sets added yet.</p>
+    </div>
+    <span asp-validation-for="Input.Sets" class="text-danger d-block mb-3"></span> 
+
+    <hr />
+    <div class="mt-4 mb-5">
+        <button type="submit" id="btnSaveWorkout" class="btn btn-primary btn-lg">Save Workout</button>
+        <a asp-page="/Index" class="btn btn-secondary btn-lg ms-2">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const addSetButton = document.getElementById('btnAddSet');
+            const loggedSetsContainer = document.getElementById('loggedSetsContainer');
+            const noSetsMessage = document.getElementById('noSetsMessage');
+            const addSetError = document.getElementById('addSetError');
+            const form = document.getElementById('logWorkoutForm');
+
+            const currentExerciseSelect = document.getElementById('currentExercise');
+            const currentExerciseNameInput = document.getElementById('currentExerciseName');
+
+            currentExerciseSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                currentExerciseNameInput.value = selectedOption.text;
+            });
+
+
+            let setsCounter = 0; 
+
+            addSetButton.addEventListener('click', function () {
+                addSetError.textContent = '';
+
+                const exerciseId = currentExerciseSelect.value;
+                const exerciseName = currentExerciseNameInput.value;
+                const setNumber = document.getElementById('currentSetNumber').value;
+                const reps = document.getElementById('currentReps').value;
+                const weight = document.getElementById('currentWeight').value;
+                const duration = document.getElementById('currentDuration').value;
+                const distance = document.getElementById('currentDistance').value;
+                const setNotes = document.getElementById('currentSetNotes').value;
+
+              
+                if (!exerciseId) {
+                    addSetError.textContent = 'Please select an exercise.';
+                    return;
+                }
+                if (!setNumber || parseInt(setNumber) < 1) {
+                    addSetError.textContent = 'Set number must be 1 or greater.';
+                    return;
+                }
+                
+                const hasMetric = reps || weight || duration || distance;
+                if (!hasMetric) {
+                    addSetError.textContent = 'At least one performance metric (Reps, Weight, Duration, Distance) is required for a set.';
+                    return;
+                }
+
+                if (noSetsMessage) {
+                    noSetsMessage.style.display = 'none'; 
+                }
+
+                const setDiv = document.createElement('div');
+                setDiv.classList.add('card', 'mb-2');
+                const setClientId = 'set-' + setsCounter; 
+                setDiv.id = setClientId;
+
+                setDiv.innerHTML = `
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="card-title mb-0">Set ${setNumber} - ${exerciseName || 'Exercise'}</h6>
+                            <button type="button" class="btn btn-sm btn-outline-danger remove-set-btn" data-target="${setClientId}">Remove</button>
+                        </div>
+                        <ul class="list-unstyled mt-2 mb-0 small">
+                            ${reps ? `<li><strong>Reps:</strong> ${reps}</li>` : ''}
+                            ${weight ? `<li><strong>Weight:</strong> ${weight}</li>` : ''}
+                            ${duration ? `<li><strong>Duration:</strong> ${duration}s</li>` : ''}
+                            ${distance ? `<li><strong>Distance:</strong> ${distance}</li>` : ''}
+                            ${setNotes ? `<li><strong>Notes:</strong> ${setNotes}</li>` : ''}
+                        </ul>
+                        <input type="hidden" name="Input.Sets[${setsCounter}].ExerciseId" value="${exerciseId}">
+                        <input type="hidden" name="Input.Sets[${setsCounter}].ExerciseName" value="${exerciseName || ''}">
+                        <input type="hidden" name="Input.Sets[${setsCounter}].SetNumber" value="${setNumber}">
+                        <input type="hidden" name="Input.Sets[${setsCounter}].Reps" value="${reps || ''}">
+                        <input type="hidden" name="Input.Sets[${setsCounter}].Weight" value="${weight || ''}">
+                        <input type="hidden" name="Input.Sets[${setsCounter}].DurationSeconds" value="${duration || ''}">
+                        <input type="hidden" name="Input.Sets[${setsCounter}].Distance" value="${distance || ''}">
+                        <input type="hidden" name="Input.Sets[${setsCounter}].SetNotes" value="${setNotes || ''}">
+                    </div>
+                `;
+                loggedSetsContainer.appendChild(setDiv);
+
+                setDiv.querySelector('.remove-set-btn').addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const setToRemove = document.getElementById(targetId);
+                    if (setToRemove) {
+                        setToRemove.remove();
+                       
+                        if (loggedSetsContainer.childElementCount === 0 || 
+                           (loggedSetsContainer.childElementCount === 1 && loggedSetsContainer.firstChild.id === 'noSetsMessage')) {
+                             if (noSetsMessage) noSetsMessage.style.display = 'block';
+                        }
+                    }
+                });
+
+
+                setsCounter++; 
+
+                document.getElementById('currentSetNumber').value = parseInt(setNumber) + 1;
+                document.getElementById('currentReps').value = "";
+                document.getElementById('currentWeight').value = "";
+                document.getElementById('currentDuration').value = "";
+                document.getElementById('currentDistance').value = "";
+                document.getElementById('currentSetNotes').value = "";
+                currentExerciseSelect.focus(); 
+            });
+
+        });
+    </script>
+}

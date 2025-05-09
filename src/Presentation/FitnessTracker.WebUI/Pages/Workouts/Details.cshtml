@@ -1,0 +1,92 @@
+@page "{id:int}"
+@model FitnessTracker.WebUI.Pages.Workouts.DetailsModel
+@{
+    ViewData["Title"] = "Workout Details";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (!string.IsNullOrEmpty(Model.PageErrorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @Model.PageErrorMessage
+    </div>
+    <p><a asp-page="./Index" class="btn btn-secondary">Back to Workout History</a></p>
+}
+else if (Model.Workout != null)
+{
+    var workout = Model.Workout;
+
+    <div class="card">
+        <div class="card-header">
+            <h4>Workout on @workout.DatePerformed.ToString("MMMM dd, yyyy 'at' h:mm tt")</h4>
+        </div>
+        <div class="card-body">
+            @if (!string.IsNullOrWhiteSpace(workout.Notes))
+            {
+                <h5 class="card-title">Notes:</h5>
+                <p class="card-text">@workout.Notes</p>
+                <hr/>
+            }
+            else
+            {
+                <p class="card-text fst-italic">No overall notes for this workout.</p>
+                 <hr/>
+            }
+
+            <h5 class="mt-3">Sets Performed:</h5>
+            @if (workout.Sets != null && workout.Sets.Any())
+            {
+                <table class="table table-sm table-striped mt-2">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Exercise</th>
+                            <th>Set #</th>
+                            <th>Reps</th>
+                            <th>Weight</th>
+                            <th>Duration (s)</th>
+                            <th>Distance</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var set in workout.Sets.OrderBy(s => s.ExerciseName).ThenBy(s => s.SetNumber))
+                        {
+                            <tr>
+                                <td>@Html.DisplayFor(modelItem => set.ExerciseName)</td>
+                                <td>@Html.DisplayFor(modelItem => set.SetNumber)</td>
+                                <td>@(set.Reps.HasValue ? Html.DisplayFor(modelItem => set.Reps) : "-")</td>
+                                <td>@(set.Weight.HasValue ? Html.DisplayFor(modelItem => set.Weight) : "-")</td>
+                                <td>@(set.DurationSeconds.HasValue ? Html.DisplayFor(modelItem => set.DurationSeconds) : "-")</td>
+                                <td>@(set.Distance.HasValue ? Html.DisplayFor(modelItem => set.Distance) : "-")</td>
+                                <td>@(string.IsNullOrWhiteSpace(set.Notes) ? "-" : Html.DisplayFor(modelItem => set.Notes))</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p class="fst-italic">No sets were recorded for this workout.</p>
+            }
+        </div>
+        <div class="card-footer text-muted">
+            Workout ID: @workout.Id
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a asp-page="./Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Workout History
+        </a>
+      
+    </div>
+}
+else
+{
+    <div class="alert alert-info mt-3">
+        Workout details are currently unavailable.
+    </div>
+    <p><a asp-page="./Index" class="btn btn-secondary">Back to Workout History</a></p>
+}
+
