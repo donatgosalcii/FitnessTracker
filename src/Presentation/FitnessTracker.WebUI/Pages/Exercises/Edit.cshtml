@@ -1,0 +1,80 @@
+@page "{id:int}"
+@model FitnessTracker.WebUI.Pages.Exercises.EditModel
+@{
+    ViewData["Title"] = "Edit Exercise";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (Model.Input != null && !string.IsNullOrEmpty(Model.Input.Name))
+{
+    <h4>Modify the details for exercise: @Model.Input.Name (ID: @Model.Id)</h4>
+}
+else
+{
+    <h4>Modify Exercise (ID: @Model.Id)</h4>
+}
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+            
+            @if (ViewData.ModelState.TryGetValue("MuscleGroupLoadError", out var muscleGroupLoadErrorEntry) && muscleGroupLoadErrorEntry.Errors.Any())
+            {
+                <div class="alert alert-warning">
+                    @foreach (var error in muscleGroupLoadErrorEntry.Errors)
+                    {
+                        <p>@error.ErrorMessage</p>
+                    }
+                </div>
+            }
+
+            <input type="hidden" asp-for="Id" />
+
+            @if(Model.Input != null)
+            {
+                <div class="form-floating mb-3">
+                    <input asp-for="Input.Name" class="form-control" placeholder="Exercise Name" />
+                    <label asp-for="Input.Name"></label>
+                    <span asp-validation-for="Input.Name" class="text-danger"></span>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <textarea asp-for="Input.Description" class="form-control" placeholder="Exercise Description" style="height: 100px"></textarea>
+                    <label asp-for="Input.Description"></label>
+                    <span asp-validation-for="Input.Description" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.SelectedMuscleGroupIds" class="form-label fw-bold">Associated Muscle Groups</label>
+                    @if (Model.AvailableMuscleGroups != null && Model.AvailableMuscleGroups.Any())
+                    {
+                        <select asp-for="Input.SelectedMuscleGroupIds" asp-items="Model.AvailableMuscleGroups" class="form-select" multiple="multiple" size="8">
+                        </select>
+                        <small class="form-text text-muted">Hold Ctrl (or Cmd on Mac) to select/deselect multiple muscle groups.</small>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">No muscle groups available for selection.</div>
+                    }
+                    <span asp-validation-for="Input.SelectedMuscleGroupIds" class="text-danger"></span>
+                </div>
+            }
+            else
+            {
+                 <div class="alert alert-warning">Could not load exercise details to edit.</div>
+            }
+            
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary" disabled="@(Model.Input == null)">Save Changes</button>
+                <a asp-page="./Index" class="btn btn-secondary ms-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

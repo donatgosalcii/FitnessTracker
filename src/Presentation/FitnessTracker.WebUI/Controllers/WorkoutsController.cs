@@ -142,6 +142,5 @@ namespace FitnessTracker.WebUI.Controllers
                 return StatusCode(500, "An unexpected error occurred while deleting workout.");
             }
         }
-         // TODO: Implement PUT /api/workouts/{id} for updating workout notes or date
     }
 }

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;    // For SignInManager and UserManager
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging; // For ILogger
+using Microsoft.AspNetCore.Http; // <-- ADDED for CookieOptions
 
 namespace FitnessTracker.WebUI.Pages.Account
 {
@@ -18,19 +19,19 @@ namespace FitnessTracker.WebUI.Pages.Account
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<LoginModel> _logger;
-        private readonly UserManager<ApplicationUser> _userManager;    
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
 
         public LoginModel(
             IHttpClientFactory httpClientFactory,
             ILogger<LoginModel> logger,
-            UserManager<ApplicationUser> userManager,   
+            UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager)
         {
             _httpClientFactory = httpClientFactory;
             _logger = logger;
-            _userManager = userManager;         
-            _signInManager = signInManager;    
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         [BindProperty]
@@ -50,8 +51,13 @@ namespace FitnessTracker.WebUI.Pages.Account
             [Required]
             [DataType(DataType.Password)]
             public string Password { get; set; } = string.Empty;
+
+            // Optional:
+            // [Display(Name = "Remember me?")]
+            // public bool RememberMe { get; set; }
         }
 
+        // This class should match the full structure of your API's LoginResponseDto
         private class ApiLoginSuccessResponse
         {
             [JsonPropertyName("isSuccess")]
@@ -63,12 +69,23 @@ namespace FitnessTracker.WebUI.Pages.Account
             [JsonPropertyName("token")]
             public string? Token { get; set; }
 
-            [JsonPropertyName("userId")] 
+            [JsonPropertyName("expiresOn")]
+            public DateTimeOffset? ExpiresOn { get; set; } // Match your API DTO
+
+            [JsonPropertyName("userId")]
             public string? UserId { get; set; }
 
-            [JsonPropertyName("email")] 
+            [JsonPropertyName("email")]
             public string? Email { get; set; }
 
+            [JsonPropertyName("firstName")]
+            public string? FirstName { get; set; } // Match your API DTO
+
+            [JsonPropertyName("lastName")]
+            public string? LastName { get; set; } // Match your API DTO
+
+            [JsonPropertyName("roles")]
+            public List<string>? Roles { get; set; } // Match your API DTO
         }
 
         private class ApiErrorResponse
@@ -112,16 +129,35 @@ namespace FitnessTracker.WebUI.Pages.Account
                         {
                             user = await _userManager.FindByIdAsync(loginApiResponse.UserId);
                         }
-                        else if (!string.IsNullOrEmpty(loginApiResponse.Email)) 
+                        else if (!string.IsNullOrEmpty(loginApiResponse.Email))
                         {
                             user = await _userManager.FindByEmailAsync(loginApiResponse.Email);
                         }
 
-
                         if (user != null)
                         {
+                            // Local Identity sign-in (sets the .AspNetCore.Identity.Application cookie)
                             await _signInManager.SignInAsync(user, isPersistent: false /* Input.RememberMe */);
                             _logger.LogInformation("User {Email} (ID: {UserId}) signed in locally to cookie scheme.", user.Email, user.Id);
+
+                            // --- Store the JWT in an HttpOnly cookie ---
+                            var cookieOptions = new CookieOptions
+                            {
+                                HttpOnly = true, // Not accessible by client-side script
+                                Secure = Request.IsHttps, // Only send over HTTPS if current request is HTTPS
+                                SameSite = SameSiteMode.Strict, // Good for security
+                                // Path = "/", // Default is usually fine
+                            };
+
+                            if (loginApiResponse.ExpiresOn.HasValue)
+                            {
+                                // Set cookie expiry to match JWT expiry if available
+                                cookieOptions.Expires = loginApiResponse.ExpiresOn.Value;
+                            }
+                            // Name the cookie something specific
+                            Response.Cookies.Append("api_auth_token", loginApiResponse.Token, cookieOptions);
+                            _logger.LogInformation("JWT token stored in HttpOnly cookie 'api_auth_token' for user {Email}.", Input.Email);
+                            // --- End JWT storage ---
 
                             return LocalRedirect(ReturnUrl);
                         }
@@ -132,7 +168,7 @@ namespace FitnessTracker.WebUI.Pages.Account
                             return Page();
                         }
                     }
-                    else 
+                    else
                     {
                         var failureMessage = loginApiResponse?.Message ?? "API login indicated failure or token was missing.";
                         _logger.LogWarning("API login response indicated failure for {Email}: {Reason}", Input.Email, failureMessage);
@@ -140,9 +176,9 @@ namespace FitnessTracker.WebUI.Pages.Account
                         return Page();
                     }
                 }
-                else 
+                else
                 {
-                    string errorMessage = $"Login failed."; 
+                    string errorMessage = $"Login failed.";
                     try
                     {
                         var errorResponse = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();

@@ -1,0 +1,34 @@
+@page "{id:int}" 
+@model FitnessTracker.WebUI.Pages.MuscleGroups.EditModel
+@{
+    ViewData["Title"] = "Edit Muscle Group";
+}
+
+<h1>@ViewData["Title"]</h1>
+<h4>Modify the details for muscle group ID: @Model.Id</h4>
+<hr />
+
+<div class="row">
+    <div class="col-md-6"> 
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+            
+            <input type="hidden" asp-for="Id" />
+
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Name" class="form-control" placeholder="Enter muscle group name" />
+                <label asp-for="Input.Name"></label>
+                <span asp-validation-for="Input.Name" class="text-danger"></span>
+            </div>
+            
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <a asp-page="./Index" class="btn btn-secondary ms-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

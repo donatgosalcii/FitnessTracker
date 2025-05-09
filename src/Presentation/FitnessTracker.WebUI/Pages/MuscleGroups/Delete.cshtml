@@ -1,0 +1,59 @@
+@page "{id:int}"
+@model FitnessTracker.WebUI.Pages.MuscleGroups.DeleteModel
+@{
+    ViewData["Title"] = "Delete Muscle Group";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (Model.MuscleGroup != null)
+{
+    var muscleGroup = Model.MuscleGroup;
+
+    <h3 class="text-danger">Are you sure you want to delete this muscle group?</h3>
+    <div>
+        <h4>Muscle Group Details:</h4>
+        <hr />
+        <dl class="row">
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => muscleGroup.Id)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => muscleGroup.Id)
+            </dd>
+            <dt class="col-sm-3">
+                @Html.DisplayNameFor(model => muscleGroup.Name)
+            </dt>
+            <dd class="col-sm-9">
+                @Html.DisplayFor(model => muscleGroup.Name)
+            </dd>
+        </dl>
+        
+        <form method="post">
+            <input type="hidden" asp-for="Id" /> 
+            
+            <div class="mt-4">
+                <button type="submit" class="btn btn-danger">Delete</button>
+                <a asp-page="./Index" class="btn btn-secondary ms-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+}
+else
+{
+    <div class="alert alert-warning mt-3" role="alert">
+        Muscle group not found or could not be loaded for deletion. Please return to the <a asp-page="./Index">list of muscle groups</a>.
+    </div>
+}
+
+@if (!ViewData.ModelState.IsValid && ViewData.ModelState[string.Empty] != null && ViewData.ModelState[string.Empty]!.Errors.Any())
+{
+    <div class="text-danger mt-3" role="alert">
+        <ul>
+            @foreach(var error in ViewData.ModelState[string.Empty]!.Errors)
+            {
+                <li>@error.ErrorMessage</li>
+            }
+        </ul>
+    </div>
+}
