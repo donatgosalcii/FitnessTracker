@@ -1,3 +1,5 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 # FitnessTracker
 
 FitnessTracker is a web application built with ASP.NET Core 8.0 using Clean Architecture principles. It allows users to track their fitness activities—such as logging workouts, exercises, and workout sets—in a secure and extensible platform.
