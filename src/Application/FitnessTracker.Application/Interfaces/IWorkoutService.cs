@@ -7,6 +7,7 @@ namespace FitnessTracker.Application.Interfaces
         Task<IEnumerable<WorkoutSummaryDto>> GetUserWorkoutsAsync(string userId);
         Task<WorkoutDetailDto?> GetWorkoutDetailsAsync(int workoutId, string userId);
         Task<WorkoutDetailDto> LogWorkoutAsync(LogWorkoutDto logDto, string userId);
+        Task<bool> UpdateWorkoutAsync(int workoutId, string userId, UpdateWorkoutDto updateDto);
         Task<bool> DeleteWorkoutAsync(int workoutId, string userId);
     }
 }

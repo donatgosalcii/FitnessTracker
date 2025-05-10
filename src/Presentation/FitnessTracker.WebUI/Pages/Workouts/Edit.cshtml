@@ -1,0 +1,394 @@
+@page "{id:int}"
+@model FitnessTracker.WebUI.Pages.Workouts.EditModel
+@{
+    ViewData["Title"] = "Edit Workout";
+}
+
+<h1>@ViewData["Title"]</h1>
+@if (Model.Input != null && !string.IsNullOrEmpty(Model.Input.OverallNotes) && Model.Input.DatePerformed != default)
+{
+    <h4>Modifying workout from @Model.Input.DatePerformed.ToString("MMMM dd, yyyy")</h4>
+}
+else if (Model.Input != null && Model.Input.DatePerformed != default)
+{
+    <h4>Modifying workout from @Model.Input.DatePerformed.ToString("MMMM dd, yyyy")</h4>
+}
+else if (Model.Id > 0)
+{
+    <h4>Modifying workout (ID: @Model.Id)</h4>
+}
+<hr />
+
+@if (Model.Input == null && !string.IsNullOrEmpty(Model.PageErrorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @Model.PageErrorMessage
+    </div>
+    <p><a asp-page="./Index" class="btn btn-secondary mt-2">Back to Workout History</a></p>
+}
+else if (Model.Input != null)
+{
+    <form method="post" id="editWorkoutForm">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+        @if (!string.IsNullOrEmpty(Model.PageErrorMessage))
+        {
+            <div class="alert alert-warning" role="alert">
+                @Model.PageErrorMessage
+            </div>
+        }
+        <input type="hidden" asp-for="Id" /> 
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label asp-for="Input.DatePerformed" class="form-label"></label>
+                <input asp-for="Input.DatePerformed" type="datetime-local" class="form-control" />
+                <span asp-validation-for="Input.DatePerformed" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Input.OverallNotes" class="form-label"></label>
+            <textarea asp-for="Input.OverallNotes" class="form-control" rows="3" placeholder="Any overall notes for this workout..."></textarea>
+            <span asp-validation-for="Input.OverallNotes" class="text-danger"></span>
+        </div>
+
+        <hr />
+        <h4 class="mt-4 mb-3">Edit / Add Sets</h4>
+
+        <div id="addSetSection" class="card card-body bg-light mb-4">
+            <h5>Add/Edit Set Details</h5>
+             @if (ViewData.ModelState["ExerciseLoadError"] != null)
+            {
+                <div class="alert alert-warning small">Could not load exercise list for selection.</div>
+            }
+            <div class="row g-3">
+                <input type="hidden" id="editingSetClientId" /> 
+                <input type="hidden" id="editingSetOriginalId" />
+
+                <div class="col-md-12">
+                    <label for="currentExercise" class="form-label">Exercise</label>
+                    <select id="currentExercise" class="form-select" asp-items="Model.AvailableExercises">
+                        <option value="">-- Select Exercise --</option>
+                    </select>
+                    <input type="hidden" id="currentExerciseName" />
+                </div>
+                <div class="col-md-2">
+                    <label for="currentSetNumber" class="form-label">Set #</label>
+                    <input type="number" id="currentSetNumber" class="form-control" value="1" min="1" />
+                </div>
+                <div class="col-md-2">
+                    <label for="currentReps" class="form-label">Reps</label>
+                    <input type="number" id="currentReps" class="form-control" min="0" />
+                </div>
+                <div class="col-md-2">
+                    <label for="currentWeight" class="form-label">Weight</label>
+                    <input type="number" id="currentWeight" step="any" class="form-control" min="0" />
+                </div>
+                <div class="col-md-2">
+                    <label for="currentDuration" class="form-label">Duration (s)</label>
+                    <input type="number" id="currentDuration" class="form-control" min="0" />
+                </div>
+                <div class="col-md-2">
+                    <label for="currentDistance" class="form-label">Distance</label>
+                    <input type="number" id="currentDistance" step="any" class="form-control" min="0" />
+                </div>
+                <div class="col-md-12">
+                    <label for="currentSetNotes" class="form-label">Set Notes</label>
+                    <input type="text" id="currentSetNotes" class="form-control" placeholder="Notes for this specific set..." />
+                </div>
+            </div>
+            <div class="mt-3 text-end">
+                <button type="button" id="btnUpdateSet" class="btn btn-success me-2" style="display:none;">Update Set in List</button>
+                <button type="button" id="btnAddSetToList" class="btn btn-info">Add Set to List</button>
+                <button type="button" id="btnClearSetForm" class="btn btn-outline-secondary ms-2">Clear Form</button>
+            </div>
+            <div id="addSetError" class="text-danger mt-2"></div>
+        </div>
+
+        <h5 class="mt-4">Current Sets in Workout</h5>
+        <div id="loggedSetsContainer" class="mb-3">
+            @if (Model.Input.Sets != null)
+            {
+                for (int i = 0; i < Model.Input.Sets.Count; i++)
+                {
+                    var set = Model.Input.Sets[i];
+                    <div class="card mb-2" id="client-set-@set.ClientId" data-original-id="@set.OriginalSetId">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="card-title mb-0">Set @set.SetNumber - @(set.ExerciseName ?? "Exercise")</h6>
+                                <div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1 edit-set-btn">Edit</button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger remove-set-btn">Remove</button>
+                                </div>
+                            </div>
+                            <ul class="list-unstyled mt-2 mb-0 small">
+                                @if(set.Reps.HasValue) { <li><strong>Reps:</strong> @set.Reps</li> }
+                                @if(set.Weight.HasValue) { <li><strong>Weight:</strong> @set.Weight</li> }
+                                @if(set.DurationSeconds.HasValue) { <li><strong>Duration:</strong> @set.DurationSeconds s</li> }
+                                @if(set.Distance.HasValue) { <li><strong>Distance:</strong> @set.Distance</li> }
+                                @if(!string.IsNullOrWhiteSpace(set.SetNotes)) { <li><strong>Notes:</strong> @set.SetNotes</li> }
+                            </ul>
+                            <input type="hidden" name="Input.Sets[@i].ClientId" value="@set.ClientId">
+                            <input type="hidden" name="Input.Sets[@i].OriginalSetId" value="@set.OriginalSetId">
+                            <input type="hidden" name="Input.Sets[@i].ExerciseId" value="@set.ExerciseId">
+                            <input type="hidden" name="Input.Sets[@i].ExerciseName" value="@set.ExerciseName">
+                            <input type="hidden" name="Input.Sets[@i].SetNumber" value="@set.SetNumber">
+                            <input type="hidden" name="Input.Sets[@i].Reps" value="@(set.Reps.HasValue ? set.Reps.Value.ToString() : "")">
+                            <input type="hidden" name="Input.Sets[@i].Weight" value="@(set.Weight.HasValue ? set.Weight.Value.ToString() : "")">
+                            <input type="hidden" name="Input.Sets[@i].DurationSeconds" value="@(set.DurationSeconds.HasValue ? set.DurationSeconds.Value.ToString() : "")">
+                            <input type="hidden" name="Input.Sets[@i].Distance" value="@(set.Distance.HasValue ? set.Distance.Value.ToString() : "")">
+                            <input type="hidden" name="Input.Sets[@i].SetNotes" value="@set.SetNotes">
+                        </div>
+                    </div>
+                }
+            }
+            @if (Model.Input.Sets == null || !Model.Input.Sets.Any())
+            {
+                <p id="noSetsMessageEdit">No sets currently in this workout. Add some using the form above.</p>
+            }
+        </div>
+        <span asp-validation-for="Input.Sets" class="text-danger d-block mb-3"></span>
+
+        <hr />
+        <div class="mt-4 mb-5">
+            <button type="submit" id="btnSaveChanges" class="btn btn-primary btn-lg">Save Workout Changes</button>
+            <a asp-page="./Details" asp-route-id="@Model.Id" class="btn btn-secondary btn-lg ms-2">Cancel</a>
+        </div>
+    </form>
+}
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const addSetSection = document.getElementById('addSetSection');
+            const loggedSetsContainer = document.getElementById('loggedSetsContainer');
+            const noSetsMessage = document.getElementById('noSetsMessageEdit');
+            const addSetError = document.getElementById('addSetError');
+            const form = document.getElementById('editWorkoutForm');
+
+            const btnAddSetToList = document.getElementById('btnAddSetToList');
+            const btnUpdateSet = document.getElementById('btnUpdateSet');
+            const btnClearSetForm = document.getElementById('btnClearSetForm');
+            
+            const editingSetClientIdInput = document.getElementById('editingSetClientId');
+            const editingSetOriginalIdInput = document.getElementById('editingSetOriginalId');
+
+            const currentExerciseSelect = document.getElementById('currentExercise');
+            const currentExerciseNameInput = document.getElementById('currentExerciseName');
+            const currentSetNumberInput = document.getElementById('currentSetNumber');
+            const currentRepsInput = document.getElementById('currentReps');
+            const currentWeightInput = document.getElementById('currentWeight');
+            const currentDurationInput = document.getElementById('currentDuration');
+            const currentDistanceInput = document.getElementById('currentDistance');
+            const currentSetNotesInput = document.getElementById('currentSetNotes');
+
+            let setsClientCounter = @(Model.Input?.Sets?.Count ?? 0); 
+
+            currentExerciseSelect.addEventListener('change', function() {
+                currentExerciseNameInput.value = this.options[this.selectedIndex].text;
+            });
+
+            function clearSetEntryForm() {
+                editingSetClientIdInput.value = '';
+                editingSetOriginalIdInput.value = '';
+                currentExerciseSelect.value = "";
+                currentExerciseNameInput.value = "";
+                currentRepsInput.value = "";
+                currentWeightInput.value = "";
+                currentDurationInput.value = "";
+                currentDistanceInput.value = "";
+                currentSetNotesInput.value = "";
+                addSetError.textContent = '';
+                btnAddSetToList.style.display = 'inline-block';
+                btnUpdateSet.style.display = 'none';
+                currentExerciseSelect.focus();
+            }
+
+            btnClearSetForm.addEventListener('click', clearSetEntryForm);
+
+            function validateCurrentSet() {
+                addSetError.textContent = '';
+                if (!currentExerciseSelect.value) {
+                    addSetError.textContent = 'Please select an exercise.'; return false;
+                }
+                if (!currentSetNumberInput.value || parseInt(currentSetNumberInput.value) < 1) {
+                    addSetError.textContent = 'Set number must be 1 or greater.'; return false;
+                }
+                const hasMetric = currentRepsInput.value || currentWeightInput.value || currentDurationInput.value || currentDistanceInput.value;
+                if (!hasMetric) {
+                    addSetError.textContent = 'At least one performance metric is required.'; return false;
+                }
+                return true;
+            }
+
+            function addSetToDom(setIndex, setData) {
+                if (noSetsMessage) noSetsMessage.style.display = 'none';
+
+                const setDiv = document.createElement('div');
+                setDiv.classList.add('card', 'mb-2');
+                setDiv.id = `client-set-${setData.clientId || setIndex}`;
+                if(setData.originalSetId) setDiv.dataset.originalId = setData.originalSetId;
+
+
+                setDiv.innerHTML = `
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="card-title mb-0">Set ${setData.setNumber} - ${setData.exerciseName}</h6>
+                            <div>
+                                <button type="button" class="btn btn-sm btn-outline-secondary me-1 edit-set-btn">Edit</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger remove-set-btn">Remove</button>
+                            </div>
+                        </div>
+                        <ul class="list-unstyled mt-2 mb-0 small">
+                            ${setData.reps ? `<li><strong>Reps:</strong> ${setData.reps}</li>` : ''}
+                            ${setData.weight ? `<li><strong>Weight:</strong> ${setData.weight}</li>` : ''}
+                            ${setData.duration ? `<li><strong>Duration:</strong> ${setData.duration}s</li>` : ''}
+                            ${setData.distance ? `<li><strong>Distance:</strong> ${setData.distance}</li>` : ''}
+                            ${setData.setNotes ? `<li><strong>Notes:</strong> ${setData.setNotes}</li>` : ''}
+                        </ul>
+                        <input type="hidden" name="Input.Sets[${setIndex}].ClientId" value="${setData.clientId || ''}">
+                        <input type="hidden" name="Input.Sets[${setIndex}].OriginalSetId" value="${setData.originalSetId || ''}">
+                        <input type="hidden" name="Input.Sets[${setIndex}].ExerciseId" value="${setData.exerciseId}">
+                        <input type="hidden" name="Input.Sets[${setIndex}].ExerciseName" value="${setData.exerciseName || ''}">
+                        <input type="hidden" name="Input.Sets[${setIndex}].SetNumber" value="${setData.setNumber}">
+                        <input type="hidden" name="Input.Sets[${setIndex}].Reps" value="${setData.reps || ''}">
+                        <input type="hidden" name="Input.Sets[${setIndex}].Weight" value="${setData.weight || ''}">
+                        <input type="hidden" name="Input.Sets[${setIndex}].DurationSeconds" value="${setData.duration || ''}">
+                        <input type="hidden" name="Input.Sets[${setIndex}].Distance" value="${setData.distance || ''}">
+                        <input type="hidden" name="Input.Sets[${setIndex}].SetNotes" value="${setData.setNotes || ''}">
+                    </div>
+                `;
+                loggedSetsContainer.appendChild(setDiv);
+                attachActionListenersToSet(setDiv);
+            }
+            
+            function updateSetInDom(clientSetId, setData) {
+                const setDiv = document.getElementById(clientSetId);
+                if(!setDiv) return;
+
+                setDiv.querySelector('.card-title').textContent = `Set ${setData.setNumber} - ${setData.exerciseName}`;
+                const ul = setDiv.querySelector('ul');
+                ul.innerHTML = `
+                    ${setData.reps ? `<li><strong>Reps:</strong> ${setData.reps}</li>` : ''}
+                    ${setData.weight ? `<li><strong>Weight:</strong> ${setData.weight}</li>` : ''}
+                    ${setData.duration ? `<li><strong>Duration:</strong> ${setData.duration}s</li>` : ''}
+                    ${setData.distance ? `<li><strong>Distance:</strong> ${setData.distance}</li>` : ''}
+                    ${setData.setNotes ? `<li><strong>Notes:</strong> ${setData.setNotes}</li>` : ''}
+                `;
+                const setIndex = Array.from(loggedSetsContainer.children).indexOf(setDiv);
+                if(setIndex === -1) return;
+
+                setDiv.querySelector(`input[name="Input.Sets[${setIndex}].ExerciseId"]`).value = setData.exerciseId;
+                setDiv.querySelector(`input[name="Input.Sets[${setIndex}].ExerciseName"]`).value = setData.exerciseName || '';
+                setDiv.querySelector(`input[name="Input.Sets[${setIndex}].SetNumber"]`).value = setData.setNumber;
+                setDiv.querySelector(`input[name="Input.Sets[${setIndex}].Reps"]`).value = setData.reps || '';
+                setDiv.querySelector(`input[name="Input.Sets[${setIndex}].Weight"]`).value = setData.weight || '';
+                setDiv.querySelector(`input[name="Input.Sets[${setIndex}].DurationSeconds"]`).value = setData.duration || '';
+                setDiv.querySelector(`input[name="Input.Sets[${setIndex}].Distance"]`).value = setData.distance || '';
+                setDiv.querySelector(`input[name="Input.Sets[${setIndex}].SetNotes"]`).value = setData.setNotes || '';
+            }
+
+            btnAddSetToList.addEventListener('click', function() {
+                if (!validateCurrentSet()) return;
+
+                const setData = {
+                    clientId: crypto.randomUUID(),
+                    originalSetId: '', 
+                    exerciseId: currentExerciseSelect.value,
+                    exerciseName: currentExerciseNameInput.value,
+                    setNumber: currentSetNumberInput.value,
+                    reps: currentRepsInput.value,
+                    weight: currentWeightInput.value,
+                    duration: currentDurationInput.value,
+                    distance: currentDistanceInput.value,
+                    setNotes: currentSetNotesInput.value
+                };
+                
+                addSetToDom(setsClientCounter, setData);
+                setsClientCounter++;
+                clearSetEntryForm();
+                currentSetNumberInput.value = (parseInt(currentSetNumberInput.value) + 1).toString(); 
+            });
+
+            btnUpdateSet.addEventListener('click', function() {
+                if (!validateCurrentSet()) return;
+                
+                const clientSetIdToUpdate = editingSetClientIdInput.value;
+                const originalDbId = editingSetOriginalIdInput.value;
+
+                const setData = {
+                    clientId: clientSetIdToUpdate.replace('client-set-',''), 
+                    originalSetId: originalDbId,
+                    exerciseId: currentExerciseSelect.value,
+                    exerciseName: currentExerciseNameInput.value,
+                    setNumber: currentSetNumberInput.value,
+                    reps: currentRepsInput.value,
+                    weight: currentWeightInput.value,
+                    duration: currentDurationInput.value,
+                    distance: currentDistanceInput.value,
+                    setNotes: currentSetNotesInput.value
+                };
+
+                updateSetInDom(clientSetIdToUpdate, setData);
+                clearSetEntryForm();
+            });
+
+            function attachActionListenersToSet(setDiv) {
+                setDiv.querySelector('.remove-set-btn').addEventListener('click', function() {
+                    setDiv.remove();
+                    if (loggedSetsContainer.querySelectorAll('.card').length === 0) {
+                        if (noSetsMessage) noSetsMessage.style.display = 'block';
+                    }
+                    reIndexHiddenInputs();
+                });
+
+                setDiv.querySelector('.edit-set-btn').addEventListener('click', function() {
+                    const clientSetId = setDiv.id;
+                    const originalId = setDiv.dataset.originalId || '';
+                    const setIndex = Array.from(loggedSetsContainer.children).indexOf(setDiv);
+
+                    editingSetClientIdInput.value = clientSetId;
+                    editingSetOriginalIdInput.value = originalId;
+
+                    currentExerciseSelect.value = setDiv.querySelector(`input[name="Input.Sets[${setIndex}].ExerciseId"]`).value;
+                    currentExerciseNameInput.value = setDiv.querySelector(`input[name="Input.Sets[${setIndex}].ExerciseName"]`).value;
+                    currentSetNumberInput.value = setDiv.querySelector(`input[name="Input.Sets[${setIndex}].SetNumber"]`).value;
+                    currentRepsInput.value = setDiv.querySelector(`input[name="Input.Sets[${setIndex}].Reps"]`).value;
+                    currentWeightInput.value = setDiv.querySelector(`input[name="Input.Sets[${setIndex}].Weight"]`).value;
+                    currentDurationInput.value = setDiv.querySelector(`input[name="Input.Sets[${setIndex}].DurationSeconds"]`).value;
+                    currentDistanceInput.value = setDiv.querySelector(`input[name="Input.Sets[${setIndex}].Distance"]`).value;
+                    currentSetNotesInput.value = setDiv.querySelector(`input[name="Input.Sets[${setIndex}].SetNotes"]`).value;
+                    
+                    btnAddSetToList.style.display = 'none';
+                    btnUpdateSet.style.display = 'inline-block';
+                    addSetSection.scrollIntoView({ behavior: 'smooth' });
+                });
+            }
+            
+            loggedSetsContainer.querySelectorAll('.card').forEach(setDiv => {
+                attachActionListenersToSet(setDiv);
+            });
+
+            function reIndexHiddenInputs() {
+                const setCards = loggedSetsContainer.querySelectorAll('.card');
+                setsClientCounter = 0;
+                setCards.forEach((card, index) => {
+                    card.querySelectorAll('input[type="hidden"]').forEach(hiddenInput => {
+                        const nameAttr = hiddenInput.getAttribute('name');
+                        if (nameAttr && nameAttr.startsWith('Input.Sets[')) {
+                            const newName = nameAttr.replace(/Input.Sets\[\d+\]/, `Input.Sets[${index}]`);
+                            hiddenInput.setAttribute('name', newName);
+                        }
+                    });
+                    setsClientCounter++;
+                });
+            }
+
+            form.addEventListener('submit', function() {
+                reIndexHiddenInputs();
+            });
+
+        });
+    </script>
+}
