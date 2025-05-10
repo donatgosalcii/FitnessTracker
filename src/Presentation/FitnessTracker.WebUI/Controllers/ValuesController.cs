@@ -9,18 +9,11 @@ namespace FitnessTracker.WebUI.Controllers
     [Route("api/[controller]")]
     public class ValuesController : ControllerBase
     {
-        private readonly ILogger<ValuesController> _logger;
-
-        public ValuesController(ILogger<ValuesController> logger)
-        {
-            _logger = logger;
-        }
 
         [HttpGet("public")]
         [AllowAnonymous]
         public IActionResult GetPublicData()
         {
-            _logger.LogInformation("Accessed /api/values/public");
             return Ok(new { Message = "This is public data, anyone can see this!" });
         }
 
@@ -32,7 +25,6 @@ namespace FitnessTracker.WebUI.Controllers
             var userEmail = User.FindFirstValue(ClaimTypes.Email);
             var userName = User.Identity?.Name;
 
-            _logger.LogInformation("User {UserId} ({UserEmail}) accessed secure data (/api/values/secure).", userId, userEmail);
 
             return Ok(new
             {
@@ -48,7 +40,6 @@ namespace FitnessTracker.WebUI.Controllers
         public IActionResult GetAdminData()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            _logger.LogInformation("User {UserId} (Admin) accessed admin-only data (/api/values/admin).", userId);
 
             return Ok(new { Message = "Welcome Admin! This data is for administrators ONLY." });
         }

@@ -11,18 +11,16 @@ namespace FitnessTracker.Application.Services
         private readonly IExerciseRepository _exerciseRepository;
         private readonly IMuscleGroupRepository _muscleGroupRepository;
         private readonly IApplicationDbContext _dbContext;
-        private readonly ILogger<ExerciseService> _logger; 
 
         public ExerciseService(
             IExerciseRepository exerciseRepository,
             IMuscleGroupRepository muscleGroupRepository,
-            IApplicationDbContext dbContext,
-            ILogger<ExerciseService> logger)
+            IApplicationDbContext dbContext)
+        
         {
             _exerciseRepository = exerciseRepository;
             _muscleGroupRepository = muscleGroupRepository;
             _dbContext = dbContext;
-            _logger = logger;
         }
 
         public async Task<ExerciseDto> CreateExerciseAsync(CreateExerciseDto createDto)
@@ -30,7 +28,6 @@ namespace FitnessTracker.Application.Services
             var existingExercise = await _exerciseRepository.GetByNameAsync(createDto.Name);
             if (existingExercise != null)
             {
-                _logger.LogWarning("Exercise with name '{Name}' already exists.", createDto.Name);
                 throw new InvalidOperationException($"An exercise with the name '{createDto.Name}' already exists.");
             }
 
@@ -52,7 +49,6 @@ namespace FitnessTracker.Application.Services
                     }
                     else
                     {
-                        _logger.LogWarning("Muscle group with ID {Id} not found while creating exercise '{ExerciseName}'.", mgId, createDto.Name);
                         throw new KeyNotFoundException($"Muscle group with ID {mgId} not found.");
                     }
                 }
@@ -61,7 +57,6 @@ namespace FitnessTracker.Application.Services
             var createdEntity = await _exerciseRepository.AddAsync(exercise);
             await _dbContext.SaveChangesAsync();
 
-            _logger.LogInformation("Exercise created: Id {Id}, Name {Name}", createdEntity.Id, createdEntity.Name);
             return MapExerciseToDto(createdEntity);
         }
 
@@ -70,7 +65,6 @@ namespace FitnessTracker.Application.Services
             var exercise = await _exerciseRepository.GetByIdWithDetailsAsync(id); 
             if (exercise == null)
             {
-                _logger.LogWarning("Exercise with ID {Id} not found for deletion.", id);
                 return false;
             }
 
@@ -79,27 +73,22 @@ namespace FitnessTracker.Application.Services
 
             if (changes > 0)
             {
-                _logger.LogInformation("Exercise deleted: Id {Id}", id);
                 return true;
             }
-            _logger.LogWarning("Exercise with ID {Id} was not deleted, or no changes were persisted.", id);
             return false;
         }
 
         public async Task<IEnumerable<ExerciseDto>> GetAllExercisesAsync()
         {
-            _logger.LogInformation("Retrieving all exercises with details.");
             var exercises = await _exerciseRepository.GetAllWithDetailsAsync();
             return exercises.Select(MapExerciseToDto);
         }
 
         public async Task<ExerciseDto?> GetExerciseByIdAsync(int id)
         {
-            _logger.LogInformation("Retrieving exercise by Id: {Id} with details.", id);
             var exercise = await _exerciseRepository.GetByIdWithDetailsAsync(id); 
             if (exercise == null)
             {
-                _logger.LogWarning("Exercise with ID {Id} not found.", id);
                 return null;
             }
             return MapExerciseToDto(exercise);
@@ -110,14 +99,12 @@ namespace FitnessTracker.Application.Services
     var exercise = await _exerciseRepository.GetByIdWithDetailsAsync(id);
     if (exercise == null)
     {
-        _logger.LogWarning("Exercise with ID {Id} not found for update.", id);
         return null;
     }
 
     var duplicateNameExercise = await _exerciseRepository.GetByNameAsync(updateDto.Name);
     if (duplicateNameExercise != null && duplicateNameExercise.Id != id)
     {
-        _logger.LogWarning("Cannot update exercise Id {ExerciseId}: Name '{Name}' already exists for exercise Id {DuplicateId}", id, updateDto.Name, duplicateNameExercise.Id);
         throw new InvalidOperationException($"Another exercise with the name '{updateDto.Name}' already exists.");
     }
 
@@ -136,7 +123,6 @@ namespace FitnessTracker.Application.Services
             }
             else
             {
-                _logger.LogWarning("Muscle group with ID {Id} not found while updating exercise '{ExerciseName}'.", mgId, updateDto.Name);
                 throw new KeyNotFoundException($"Muscle group with ID {mgId} not found.");
             }
         }
@@ -150,17 +136,14 @@ namespace FitnessTracker.Application.Services
         Exercise? updatedExerciseAfterSave = await _exerciseRepository.GetByIdWithDetailsAsync(id); 
         if (updatedExerciseAfterSave != null)
         {
-            _logger.LogInformation("Exercise updated: Id {Id}", id);
             return MapExerciseToDto(updatedExerciseAfterSave);
         }
         else
         {
-            _logger.LogError("Exercise with ID {Id} could not be refetched after update attempt.", id);
             return null; 
         }
     }
     
-    _logger.LogWarning("Exercise with ID {Id} was not updated properly, or an issue occurred during save.", id);
     return null;
     }
 

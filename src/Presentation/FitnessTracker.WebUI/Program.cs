@@ -11,12 +11,17 @@ using System.Text;
 using Microsoft.Extensions.Options;
 using FitnessTracker.Infrastructure.Authentication;
 using FitnessTracker.Infrastructure.Repositories;
-using Microsoft.AspNetCore.DataProtection; 
+using Microsoft.AspNetCore.DataProtection;
+using FitnessTracker.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection(JwtSettings.SectionName)
+);
+
+builder.Services.Configure<SmtpSettings>(
+    builder.Configuration.GetSection(SmtpSettings.SectionName)
 );
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -34,7 +39,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Password.RequireUppercase = true;
     options.Password.RequireNonAlphanumeric = true;
     options.Password.RequiredLength = 8;
-    options.SignIn.RequireConfirmedAccount = false;
+    options.SignIn.RequireConfirmedAccount = true;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
@@ -56,7 +61,7 @@ builder.Services.AddAuthentication(options =>
         options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
         options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
     })
-    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme); 
+    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme);
 
 builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
     .Configure<IOptions<JwtSettings>, IWebHostEnvironment>((bearerOptions, jwtOptions, hostingEnv) =>
@@ -70,8 +75,8 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = settings.Issuer, 
-            ValidAudience = settings.Audience, 
+            ValidIssuer = settings.Issuer,
+            ValidAudience = settings.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.Secret)),
             ClockSkew = TimeSpan.Zero
         };
@@ -81,7 +86,7 @@ builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo("/home/donatgosalci/FitnessTrackerKeys"))
     .SetApplicationName("FitnessTrackerApp");
 
-
+builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IMuscleGroupRepository, MuscleGroupRepository>();
@@ -102,6 +107,9 @@ builder.Services.AddRazorPages(options =>
 {
     options.Conventions.AllowAnonymousToPage("/Account/Login");
     options.Conventions.AllowAnonymousToPage("/Account/Register");
+    options.Conventions.AllowAnonymousToPage("/Account/ConfirmEmail");
+    options.Conventions.AllowAnonymousToPage("/Account/RegistrationConfirmation");
+    options.Conventions.AllowAnonymousToPage("/Account/ResendEmailConfirmation");
 });
 
 var app = builder.Build();
@@ -116,12 +124,9 @@ else
 }
 
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapRazorPages();
 app.MapControllers();
 
@@ -130,27 +135,22 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         string[] roleNames = { "Admin", "User" };
-        logger.LogInformation("Starting role seeding...");
         foreach (var roleName in roleNames)
         {
             var roleExist = await roleManager.RoleExistsAsync(roleName);
             if (!roleExist)
             {
                 var roleResult = await roleManager.CreateAsync(new IdentityRole(roleName));
-                if (roleResult.Succeeded) { logger.LogInformation($"Role '{roleName}' created successfully."); }
-                else { logger.LogError($"Error creating role '{roleName}'. Errors: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}"); }
+                if (!roleResult.Succeeded)
+                {
+                }
             }
-            else { logger.LogInformation($"Role '{roleName}' already exists."); }
         }
-        logger.LogInformation("Finished role seeding.");
     }
-    catch (Exception ex)
+    catch (Exception) 
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the database roles.");
     }
 }
 
