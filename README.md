@@ -1,101 +1,80 @@
-🏋️ FitnessTracker
+# FitnessTracker
 
 FitnessTracker is a web application built with ASP.NET Core 8.0 using Clean Architecture principles. It allows users to track their fitness activities—such as logging workouts, exercises, and workout sets—in a secure and extensible platform.
 
-📌 Project Goals
+---
 
-Log and manage workouts and exercises.
+## Project Goals
 
-Track sets with reps, weights, and durations.
+- Log and manage workouts and exercises.
+- Track sets with reps, weights, and durations.
+- Provide user authentication via Identity and JWT.
+- Offer both Razor Pages UI and API access.
 
-Provide user authentication via Identity and JWT.
+---
 
-Offer both Razor Pages UI and API access.
+## Tech Stack
 
-💠 Tech Stack
+| Layer              | Tech/Tool                                           |
+|-------------------|-----------------------------------------------------|
+| Framework          | ASP.NET Core 8.0                                    |
+| Architecture       | Clean Architecture (Domain, Application, etc.)     |
+| Authentication     | ASP.NET Core Identity + JWT Bearer Token           |
+| UI                 | Razor Pages + Bootstrap                             |
+| Data Access        | EF Core 8 (Code-First) + SQL Server                 |
+| IDE (Dev)          | JetBrains Rider on Ubuntu Linux                     |
 
-Layer
+---
 
-Tech/Tool
+## Solution Structure
 
-Framework
-
-ASP.NET Core 8.0
-
-Architecture
-
-Clean Architecture (Domain, Application, etc.)
-
-Authentication
-
-ASP.NET Core Identity + JWT Bearer Token
-
-UI
-
-Razor Pages + Bootstrap
-
-Data Access
-
-EF Core 8 (Code-First) + SQL Server
-
-IDE (Dev)
-
-JetBrains Rider on Ubuntu Linux
-
-📂 Solution Structure
-
+```
 src/
 ├── FitnessTracker.Domain        # Entities, relationships, EF configurations
 ├── FitnessTracker.Application   # DTOs, Interfaces, Services
 ├── FitnessTracker.Infrastructure# EF DbContext, Repositories, JWT Auth
 └── FitnessTracker.WebUI         # Razor Pages, Controllers, Program.cs
+```
 
-🔐 Authentication Overview
+---
 
-ASP.NET Core Identity (Cookies): Used for UI session auth (Razor Pages).
+## Authentication Overview
 
-JWT Bearer Token: Used for backend API auth (issued on login, stored in HttpOnly cookie).
+- **ASP.NET Core Identity (Cookies):** Used for UI session auth (Razor Pages).
+- **JWT Bearer Token:** Used for backend API auth (issued on login, stored in HttpOnly cookie).
+- **Mixed-Mode Auth:** Configured to support both seamlessly.
 
-Mixed-Mode Auth: Configured to support both seamlessly.
+---
 
-📚 Features
+## Features
 
-✅ Account Management
+### Account Management
+- Register/Login/Logout with secure password handling
+- Role-based access control (User, Admin)
+- JWT-based token issuance with expiration and claims
 
-Register/Login/Logout with secure password handling
+### Muscle Groups (Admin-only)
+- CRUD operations via API and UI
+- Linked to exercises
 
-Role-based access control (User, Admin)
+### Exercises (Admin-only)
+- Create/Edit/Delete exercises with associated muscle groups
+- Uses multi-select UI components
+- Visible in workout forms
 
-JWT-based token issuance with expiration and claims
+### Workouts (Users)
+- Log new workouts with multiple sets
+- View workout history and details
+- Edit and delete past workouts
+- Dynamic client-side JavaScript for managing sets
 
-✅ Muscle Groups (Admin-only)
+---
 
-CRUD operations via API and UI
+## Configuration
 
-Linked to exercises
+### `appsettings.json`
 
-✅ Exercises (Admin-only)
-
-Create/Edit/Delete exercises with associated muscle groups
-
-Uses multi-select UI components
-
-Visible in workout forms
-
-✅ Workouts (Users)
-
-Log new workouts with multiple sets
-
-View workout history and details
-
-Edit and delete past workouts
-
-Dynamic client-side JavaScript for managing sets
-
-⚙️ Configuration
-
-appsettings.json
-
+```json
 "ConnectionStrings": {
   "DefaultConnection": "Server=localhost;Database=FitnessTrackerDb;User Id=sa;Password=YourPasswordHere;"
 },
@@ -105,86 +84,88 @@ appsettings.json
   "Audience": "http://localhost:5179",
   "ExpiryMinutes": 60
 }
+```
 
-launchSettings.json
-
+### `launchSettings.json`
+```json
 "applicationUrl": "https://localhost:7115;http://localhost:5179"
+```
 
-🧪 Testing Status
+---
 
-Area
+## Testing Status
 
-Status
+| Area                  | Status   |
+|-----------------------|----------|
+| Account API           | Tested via Postman/UI |
+| MuscleGroup API/UI    | Working & verified    |
+| Exercise API/UI       | Working & verified    |
+| Workout Logging       | Working with dynamic JS |
+| Workout Editing       | In Progress (currently being tested) |
 
-Account API
+---
 
-✅ Tested via Postman/UI
+## Known Issues / Workarounds
 
-MuscleGroup API/UI
+- HTTPS redirect may fail due to local dev certs; HTTP used by default.
+- JWT Bearer cookies stored as `HttpOnly` to prevent XSS access.
+- WorkoutSet editing uses a "delete-and-reinsert" pattern for simplicity.
+- UI pages currently built for desktop browser usage.
 
-✅ Working & verified
+---
 
-Exercise API/UI
+## Next Steps
 
-✅ Working & verified
+- Complete Edit Workout Testing
+- Add server/client-side validations (FluentValidation)
+- Implement structured logging (e.g., Serilog)
+- Write unit and integration tests
+- Improve error handling and user messages
+- Add Swagger for API documentation
+- Deploy with Docker + CI/CD
 
-Workout Logging
+---
 
-✅ Working with dynamic JS
+## Getting Started
 
-Workout Editing
+1. Clone the repo:
+   ```bash
+   git clone https://github.com/your-username/FitnessTracker.git
+   cd FitnessTracker
+   ```
 
-🧰 In Progress (currently being tested)
+2. Apply Migrations:
+   ```bash
+   dotnet ef database update --project src/FitnessTracker.Infrastructure
+   ```
 
-🚧 Known Issues / Workarounds
+3. Run the app:
+   ```bash
+   dotnet run --project src/FitnessTracker.WebUI
+   ```
 
-HTTPS redirect may fail due to local dev certs; HTTP used by default.
+4. Open in browser:  
+   `http://localhost:5179` or `https://localhost:7115`
 
-JWT Bearer cookies stored as HttpOnly to prevent XSS access.
+---
 
-WorkoutSet editing uses a "delete-and-reinsert" pattern for simplicity.
+## Developer Notes
 
-UI pages currently built for desktop browser usage.
+- Built with Clean Architecture for maintainability.
+- All services are injected via `AddScoped`.
+- Supports Razor Pages UI and RESTful API simultaneously.
+- Uses IHttpClientFactory for internal API calls.
 
-📊 Next Steps
+---
 
-✅ Complete Edit Workout Testing
+## License
 
-\2b1c Add server/client-side validations (FluentValidation)
+MIT License. See `LICENSE.txt` for details.
 
-\2b1c Implement structured logging (e.g., Serilog)
+---
 
-\2b1c Write unit and integration tests
+## Acknowledgements
 
-\2b1c Improve error handling and user messages
-
-\2b1c Add Swagger for API documentation
-
-\2b1c Deploy with Docker + CI/CD
-
-🚀 Getting Started
-
-Clone the repo:
-
-git clone https://github.com/your-username/FitnessTracker.git
-cd FitnessTracker
-
-Apply Migrations:
-
-dotnet ef database update --project src/FitnessTracker.Infrastructure
-
-Run the app:
-
-dotnet run --project src/FitnessTracker.WebUI
-
-Open in browser:http://localhost:5179 or https://localhost:7115
-
-👨‍💼 Developer Notes
-
-Built with Clean Architecture for maintainability.
-
-All services are injected via AddScoped.
-
-Supports Razor Pages UI and RESTful API simultaneously.
-
-Uses IHttpClientFactory for internal API calls.
+- Bootstrap & jQuery for frontend components
+- Microsoft Identity for authentication
+- FluentValidation (planned) for model validation
