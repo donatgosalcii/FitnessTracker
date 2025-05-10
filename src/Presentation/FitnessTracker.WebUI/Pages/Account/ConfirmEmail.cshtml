@@ -1,0 +1,34 @@
+@page
+@model FitnessTracker.WebUI.Pages.Account.ConfirmEmailModel
+@{
+    ViewData["Title"] = "Email Confirmation";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+    var statusMessageClass = Model.IsSuccess ? "alert-success" : "alert-danger";
+    <div class="alert @statusMessageClass" role="alert">
+        @Model.StatusMessage
+    </div>
+}
+
+@if (Model.IsSuccess)
+{
+    <p>
+        Your email has been successfully confirmed.
+    </p>
+    <p>
+        You can now <a asp-page="./Login" class="btn btn-success">Log In</a>.
+    </p>
+}
+else
+{
+    <p>
+        If you're having trouble, please ensure you copied the entire link correctly.
+        You may need to <a asp-page="./ResendEmailConfirmation" asp-route-userId="@Model.UserIdAttempted">resend the confirmation email</a>
+        or contact support. (Resend functionality to be implemented).
+    </p>
+    <a asp-page="/Index" class="btn btn-primary">Back to Home</a>
+}

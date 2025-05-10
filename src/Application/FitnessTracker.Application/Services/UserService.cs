@@ -2,7 +2,8 @@ using FitnessTracker.Application.DTOs.Accounts;
 using FitnessTracker.Application.Interfaces;
 using FitnessTracker.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.WebUtilities;
+using System.Text;
 
 namespace FitnessTracker.Application.Services
 {
@@ -10,28 +11,27 @@ namespace FitnessTracker.Application.Services
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly ILogger<UserService> _logger;
         private readonly IJwtTokenGenerator _jwtTokenGenerator;
 
         public UserService(
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
-            ILogger<UserService> logger,
             IJwtTokenGenerator jwtTokenGenerator)
         {
             _userManager = userManager;
             _roleManager = roleManager;
-            _logger = logger;
             _jwtTokenGenerator = jwtTokenGenerator;
         }
 
-        public async Task<IdentityResult> RegisterUserAsync(UserRegistrationDto dto)
+        public async Task<UserRegistrationResult> RegisterUserAndPrepareConfirmationAsync(UserRegistrationDto dto)
         {
+            var registrationResultOutput = new UserRegistrationResult();
+
             var existingUser = await _userManager.FindByEmailAsync(dto.Email);
             if (existingUser != null)
             {
-                _logger.LogWarning("Registration attempt for existing email: {Email}", dto.Email);
-                return IdentityResult.Failed(new IdentityError { Code = "EmailInUse", Description = "Email is already in use." });
+                registrationResultOutput.IdentityResult = IdentityResult.Failed(new IdentityError { Code = "EmailInUse", Description = "Email is already in use." });
+                return registrationResultOutput;
             }
 
             var user = new ApplicationUser
@@ -40,85 +40,80 @@ namespace FitnessTracker.Application.Services
                 Email = dto.Email,
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
-                EmailConfirmed = true
+                EmailConfirmed = false
             };
 
-            var result = await _userManager.CreateAsync(user, dto.Password);
+            var createResult = await _userManager.CreateAsync(user, dto.Password);
+            registrationResultOutput.IdentityResult = createResult;
+            registrationResultOutput.User = user;
 
-            if (result.Succeeded)
+            if (createResult.Succeeded)
             {
-                _logger.LogInformation("User {Email} created successfully.", dto.Email);
                 if (!await _roleManager.RoleExistsAsync("User"))
                 {
-                    await _roleManager.CreateAsync(new IdentityRole("User"));
-                    _logger.LogInformation("Role 'User' created.");
+                    var roleResult = await _roleManager.CreateAsync(new IdentityRole("User"));
                 }
-                await _userManager.AddToRoleAsync(user, "User");
-                _logger.LogInformation("User {Email} added to 'User' role.", dto.Email);
+                var addToRoleResult = await _userManager.AddToRoleAsync(user, "User");
+
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                registrationResultOutput.ConfirmationToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+                registrationResultOutput.RequiresEmailConfirmation = true;
             }
-            else
-            {
-                _logger.LogError("User creation failed for {Email}. Errors: {Errors}", dto.Email, string.Join(", ", result.Errors.Select(e => e.Description)));
-            }
-            return result;
+
+            return registrationResultOutput;
         }
 
-        public async Task<LoginResponseDto> LoginUserAsync(UserLoginDto loginDto)
+        public async Task<LoginResponseDto> GenerateLoginResponseAsync(ApplicationUser user)
         {
-            _logger.LogInformation("Login attempt for user: {Email}", loginDto.Email);
 
-            var user = await _userManager.FindByEmailAsync(loginDto.Email);
+            var tokenDetails = await _jwtTokenGenerator.GenerateTokenDetailsAsync(user);
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            return new LoginResponseDto
+            {
+                IsSuccess = true,
+                Message = "Login successful.",
+                Token = tokenDetails.Token,
+                ExpiresOn = tokenDetails.ExpiresOn,
+                UserId = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Roles = userRoles ?? new List<string>()
+            };
+        }
+
+        public async Task<ResendConfirmationResult> PrepareResendConfirmationAsync(string email)
+        {
+            var resultOutput = new ResendConfirmationResult();
+            var user = await _userManager.FindByEmailAsync(email);
+
             if (user == null)
             {
-                _logger.LogWarning("Login failed: User not found for email {Email}.", loginDto.Email);
-                return new LoginResponseDto { IsSuccess = false, Message = "Invalid email or password." };
+                resultOutput.UserFound = false;
+                return resultOutput;
             }
 
-            if (await _userManager.IsLockedOutAsync(user))
+            resultOutput.UserFound = true;
+            resultOutput.User = user;
+
+            if (string.IsNullOrEmpty(user.Email))
             {
-                _logger.LogWarning("Login failed: User {Email} is locked out.", loginDto.Email);
-                return new LoginResponseDto { IsSuccess = false, Message = "Account locked out. Please try again later." };
+                 resultOutput.UserFound = false;
+                 return resultOutput;
             }
 
-            var isPasswordCorrect = await _userManager.CheckPasswordAsync(user, loginDto.Password);
-
-            if (isPasswordCorrect)
+            if (user.EmailConfirmed)
             {
-                _logger.LogInformation("User {Email} logged in successfully.", loginDto.Email);
-                if (await _userManager.GetAccessFailedCountAsync(user) > 0)
-                {
-                    await _userManager.ResetAccessFailedCountAsync(user);
-                }
-
-                var tokenDetails = await _jwtTokenGenerator.GenerateTokenDetailsAsync(user);
-                var userRoles = await _userManager.GetRolesAsync(user);
-
-                return new LoginResponseDto
-                {
-                    IsSuccess = true,
-                    Message = "Login successful.",
-                    Token = tokenDetails.Token,
-                    ExpiresOn = tokenDetails.ExpiresOn,
-                    UserId = user.Id,
-                    Email = user.Email,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Roles = userRoles ?? new List<string>()
-                };
+                resultOutput.AlreadyConfirmed = true;
+                return resultOutput;
             }
-            else
-            {
-                _logger.LogWarning("Login failed for user {Email}: Invalid credentials.", loginDto.Email);
-                await _userManager.AccessFailedAsync(user);
 
-                if (await _userManager.IsLockedOutAsync(user))
-                {
-                    _logger.LogWarning("User {Email} is now locked out after failed login attempt.", loginDto.Email);
-                    return new LoginResponseDto { IsSuccess = false, Message = "Account locked out due to multiple failed attempts. Please try again later." };
-                }
-
-                return new LoginResponseDto { IsSuccess = false, Message = "Invalid email or password." };
-            }
+            resultOutput.AlreadyConfirmed = false;
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            resultOutput.ConfirmationToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+            
+            return resultOutput;
         }
     }
 }

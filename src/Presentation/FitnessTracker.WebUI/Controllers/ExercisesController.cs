@@ -12,18 +12,15 @@ namespace FitnessTracker.WebUI.Controllers
     public class ExercisesController : ControllerBase
     {
         private readonly IExerciseService _exerciseService;
-        private readonly ILogger<ExercisesController> _logger;
 
-        public ExercisesController(IExerciseService exerciseService, ILogger<ExercisesController> logger)
+        public ExercisesController(IExerciseService exerciseService)
         {
-            _exerciseService = exerciseService;
-            _logger = logger;
+            _exerciseService = exerciseService; 
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ExerciseDto>>> GetAllExercises()
         {
-            _logger.LogInformation("Attempting to retrieve all exercises.");
             var exercises = await _exerciseService.GetAllExercisesAsync();
             return Ok(exercises);
         }
@@ -31,12 +28,10 @@ namespace FitnessTracker.WebUI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ExerciseDto>> GetExerciseById(int id)
         {
-            _logger.LogInformation("Attempting to retrieve exercise with ID: {Id}", id);
             var exercise = await _exerciseService.GetExerciseByIdAsync(id);
 
             if (exercise == null)
             {
-                _logger.LogWarning("Exercise with ID: {Id} not found.", id);
                 return NotFound(new { Message = $"Exercise with ID {id} not found." });
             }
             return Ok(exercise);
@@ -51,26 +46,21 @@ namespace FitnessTracker.WebUI.Controllers
                 return BadRequest(ModelState);
             }
 
-            _logger.LogInformation("Attempting to create exercise with name: {Name}", createDto.Name);
             try
             {
                 var createdExercise = await _exerciseService.CreateExerciseAsync(createDto);
-                 _logger.LogInformation("Exercise created successfully with ID {Id}", createdExercise.Id);
                 return CreatedAtAction(nameof(GetExerciseById), new { id = createdExercise.Id }, createdExercise);
             }
             catch (KeyNotFoundException ex)
             {
-                _logger.LogWarning("Failed to create exercise (e.g., MuscleGroup not found): {ErrorMessage}", ex.Message);
                 return BadRequest(new { Message = ex.Message });
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogWarning("Failed to create exercise (e.g., duplicate name): {ErrorMessage}", ex.Message);
                 return Conflict(new { Message = ex.Message });
             }
-            catch (System.Exception ex)
+            catch (System.Exception) 
             {
-                _logger.LogError(ex, "An error occurred while creating exercise with name: {Name}", createDto.Name);
                 return StatusCode(500, "An unexpected error occurred.");
             }
         }
@@ -84,32 +74,26 @@ namespace FitnessTracker.WebUI.Controllers
                 return BadRequest(ModelState);
             }
 
-            _logger.LogInformation("Attempting to update exercise with ID: {Id}", id);
             try
             {
                 var updatedExercise = await _exerciseService.UpdateExerciseAsync(id, updateDto);
 
                 if (updatedExercise == null)
                 {
-                     _logger.LogWarning("Update failed: Exercise with ID: {Id} not found.", id);
                     return NotFound(new { Message = $"Exercise with ID {id} not found." });
                 }
-                 _logger.LogInformation("Exercise ID {Id} updated successfully.", id);
                 return Ok(updatedExercise);
             }
-            catch (KeyNotFoundException ex)
+            catch (KeyNotFoundException ex) 
             {
-                _logger.LogWarning("Failed to update exercise ID {Id} (e.g., MuscleGroup not found): {ErrorMessage}", id, ex.Message);
                 return BadRequest(new { Message = ex.Message });
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException ex) 
             {
-                 _logger.LogWarning("Failed to update exercise ID {Id} (e.g., duplicate name): {ErrorMessage}", id, ex.Message);
                 return Conflict(new { Message = ex.Message });
             }
-             catch (System.Exception ex)
+             catch (System.Exception)
             {
-                _logger.LogError(ex, "An error occurred while updating exercise ID: {Id}", id);
                 return StatusCode(500, "An unexpected error occurred.");
             }
         }
@@ -118,24 +102,20 @@ namespace FitnessTracker.WebUI.Controllers
         [Authorize(Roles = "Admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> DeleteExercise(int id)
         {
-            _logger.LogInformation("Attempting to delete exercise with ID: {Id}", id);
             try
             {
                 var success = await _exerciseService.DeleteExerciseAsync(id);
                 if (success)
                 {
-                    _logger.LogInformation("Exercise ID {Id} deleted successfully.", id);
                     return NoContent();
                 }
                 else
                 {
-                    _logger.LogWarning("Delete failed: Exercise with ID: {Id} not found.", id);
                     return NotFound(new { Message = $"Exercise with ID {id} not found." });
                 }
             }
-            catch (System.Exception ex)
+            catch (System.Exception) 
             {
-                _logger.LogError(ex, "An error occurred while deleting exercise ID: {Id}", id);
                 return StatusCode(500, "An unexpected error occurred.");
             }
         }

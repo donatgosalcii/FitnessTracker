@@ -1,0 +1,28 @@
+@page
+@model FitnessTracker.WebUI.Pages.Account.RegistrationConfirmationModel
+@{
+    ViewData["Title"] = "Registration Almost Complete!";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="alert alert-success" role="alert">
+    <h4 class="alert-heading">Thank You for Registering!</h4>
+    <p>
+        An email has been sent to <strong>@Model.Email</strong> with a link to confirm your account.
+    </p>
+    <hr>
+    <p class="mb-0">
+        You must click the link in that email before you can log in.
+        If you don't see the email in your inbox, please check your spam or junk folder.
+    </p>
+</div>
+
+<div>
+    <p>
+        If you encounter any issues or do not receive the email within a few minutes,
+        you may need to <a asp-page="./ResendEmailConfirmation" asp-route-email="@Model.Email">resend the confirmation email</a>
+        or contact support. (Resend functionality to be implemented).
+    </p>
+    <a asp-page="/Index" class="btn btn-primary">Back to Home</a>
+</div>

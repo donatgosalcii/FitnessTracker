@@ -3,7 +3,6 @@ using FitnessTracker.Application.DTOs.WorkoutSet;
 using FitnessTracker.Application.Interfaces;
 using FitnessTracker.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace FitnessTracker.Application.Services
 {
@@ -12,27 +11,22 @@ namespace FitnessTracker.Application.Services
         private readonly IWorkoutRepository _workoutRepository;
         private readonly IExerciseRepository _exerciseRepository;
         private readonly IApplicationDbContext _dbContext;
-        private readonly ILogger<WorkoutService> _logger;
 
         public WorkoutService(
             IWorkoutRepository workoutRepository,
             IExerciseRepository exerciseRepository,
-            IApplicationDbContext dbContext,
-            ILogger<WorkoutService> logger)
+            IApplicationDbContext dbContext)
         {
             _workoutRepository = workoutRepository;
             _exerciseRepository = exerciseRepository;
             _dbContext = dbContext;
-            _logger = logger;
         }
 
         public async Task<WorkoutDetailDto> LogWorkoutAsync(LogWorkoutDto logDto, string userId)
         {
-            _logger.LogInformation("Attempting to log workout for user {UserId} performed on {DatePerformed}", userId, logDto.DatePerformed);
 
             if (logDto.Sets == null || !logDto.Sets.Any())
             {
-                _logger.LogWarning("LogWorkoutAsync failed for user {UserId}: No sets provided.", userId);
                 throw new ArgumentException("Workout must contain at least one set.");
             }
 
@@ -49,13 +43,11 @@ namespace FitnessTracker.Application.Services
                 var exercise = await _exerciseRepository.GetByIdAsync(setDto.ExerciseId);
                 if (exercise == null)
                 {
-                    _logger.LogError("LogWorkoutAsync failed for user {UserId}: Invalid ExerciseId {ExerciseId} provided in set.", userId, setDto.ExerciseId);
                     throw new KeyNotFoundException($"Exercise with ID {setDto.ExerciseId} not found.");
                 }
 
                 if (!setDto.HasPerformanceMetric())
                 {
-                     _logger.LogWarning("LogWorkoutAsync for user {UserId}: Set for exercise {ExerciseId} has no performance metrics (Reps, Weight, Duration, Distance).", userId, setDto.ExerciseId);
                 }
 
                 workout.Sets.Add(new WorkoutSet
@@ -74,12 +66,10 @@ namespace FitnessTracker.Application.Services
             var createdWorkout = await _workoutRepository.AddAsync(workout);
             await _dbContext.SaveChangesAsync(); 
 
-            _logger.LogInformation("Workout logged successfully for user {UserId} with Workout ID {WorkoutId}", userId, createdWorkout.Id);
 
             var workoutDetails = await GetWorkoutDetailsAsync(createdWorkout.Id, userId);
             if (workoutDetails == null)
             {
-                 _logger.LogError("Failed to retrieve workout details immediately after logging for Workout ID {WorkoutId} and User ID {UserId}", createdWorkout.Id, userId);
                  throw new InvalidOperationException("Failed to retrieve workout details after logging.");
             }
             return workoutDetails;
@@ -87,7 +77,6 @@ namespace FitnessTracker.Application.Services
         
         public async Task<bool> UpdateWorkoutAsync(int workoutId, string userId, UpdateWorkoutDto updateDto)
         {
-            _logger.LogInformation("User {UserId} attempting to update workout {WorkoutId}", userId, workoutId);
 
            
             var workoutToUpdate = await _dbContext.Workouts
@@ -96,14 +85,12 @@ namespace FitnessTracker.Application.Services
 
             if (workoutToUpdate == null)
             {
-                _logger.LogWarning("Workout {WorkoutId} not found for update by user {UserId}.", workoutId, userId);
                 return false; 
             }
 
             workoutToUpdate.DatePerformed = updateDto.DatePerformed;
             workoutToUpdate.Notes = updateDto.Notes ?? string.Empty;
 
-            _logger.LogDebug("Clearing existing sets for workout {WorkoutId} before update.", workoutId);
             if (workoutToUpdate.Sets != null) 
             {
               
@@ -115,19 +102,16 @@ namespace FitnessTracker.Application.Services
 
             if (updateDto.Sets != null && updateDto.Sets.Any())
             {
-                _logger.LogDebug("Adding {SetCount} sets from DTO for workout {WorkoutId}.", updateDto.Sets.Count, workoutId);
                 foreach (var setDto in updateDto.Sets)
                 {
                     var exercise = await _exerciseRepository.GetByIdAsync(setDto.ExerciseId);
                     if (exercise == null)
                     {
-                        _logger.LogError("UpdateWorkoutAsync failed for user {UserId}: Invalid ExerciseId {ExerciseId} provided in set.", userId, setDto.ExerciseId);
                         throw new KeyNotFoundException($"Exercise with ID {setDto.ExerciseId} not found. Cannot update workout.");
                     }
 
                     if (!setDto.HasPerformanceMetric())
                     {
-                        _logger.LogWarning("UpdateWorkoutAsync for user {UserId}: Set for exercise {ExerciseId} has no performance metrics.", userId, setDto.ExerciseId);
                     }
 
                     workoutToUpdate.Sets.Add(new WorkoutSet
@@ -146,25 +130,21 @@ namespace FitnessTracker.Application.Services
             }
             else
             {
-                _logger.LogWarning("UpdateWorkoutAsync for user {UserId}, workout {WorkoutId}: No sets provided in update DTO. All existing sets will be removed.", userId, workoutId);
             }
 
             
             var changes = await _dbContext.SaveChangesAsync();
 
-            _logger.LogInformation("Workout {WorkoutId} update processed for user {UserId}. Changes saved: {ChangesCount}", workoutId, userId, changes);
             return true;
         }
 
 
         public async Task<bool> DeleteWorkoutAsync(int workoutId, string userId)
         {
-            _logger.LogInformation("Attempting to delete workout {WorkoutId} for user {UserId}", workoutId, userId);
 
             var workout = await _workoutRepository.GetWorkoutByIdAsync(workoutId, userId); 
             if (workout == null)
             {
-                _logger.LogWarning("DeleteWorkoutAsync failed: Workout {WorkoutId} not found or not owned by user {UserId}", workoutId, userId);
                 return false;
             }
 
@@ -173,23 +153,19 @@ namespace FitnessTracker.Application.Services
 
             if (changes > 0)
             {
-                _logger.LogInformation("Workout {WorkoutId} deleted successfully for user {UserId}", workoutId, userId);
                 return true;
             }
             
-            _logger.LogWarning("Workout {WorkoutId} owned by user {UserId} was not deleted (no changes persisted).", workoutId, userId);
             return false;
         }
 
         public async Task<WorkoutDetailDto?> GetWorkoutDetailsAsync(int workoutId, string userId)
         {
-            _logger.LogInformation("Retrieving details for workout {WorkoutId} for user {UserId}", workoutId, userId);
 
             var workout = await _workoutRepository.GetWorkoutByIdWithDetailsAsync(workoutId, userId);
 
             if (workout == null)
             {
-                _logger.LogWarning("Workout details not found for workout {WorkoutId} owned by user {UserId}", workoutId, userId);
                 return null;
             }
 
@@ -218,7 +194,6 @@ namespace FitnessTracker.Application.Services
 
         public async Task<IEnumerable<WorkoutSummaryDto>> GetUserWorkoutsAsync(string userId)
         {
-            _logger.LogInformation("Retrieving workout summaries for user {UserId}", userId);
             var workouts = await _workoutRepository.GetWorkoutsForUserAsync(userId);
 
             return workouts.Select(w => new WorkoutSummaryDto
