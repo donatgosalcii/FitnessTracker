@@ -1,6 +1,5 @@
 @using Microsoft.AspNetCore.Identity
 @using FitnessTracker.Domain.Entities
-
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
@@ -8,21 +7,28 @@
     @if (SignInManager.IsSignedIn(User))
     {
         <li class="nav-item">
-            <a class="nav-link text-dark" asp-page="/Account/Manage/Index" title="Manage">Hello @UserManager.GetUserName(User)!</a>
+            @{
+                var user = await UserManager.GetUserAsync(User);
+                var userName = user?.FirstName ?? User.Identity?.Name;
+            }
+            <a id="manage" class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @userName!</a>
         </li>
         <li class="nav-item">
-            <form class="form-inline" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })" method="post">
-                <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+            <a class="nav-link text-dark" asp-page="/Account/Manage/ChangePassword" title="Change Password">Change Password</a>
+        </li>
+        <li class="nav-item">
+            <form id="logoutForm" class="form-inline" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })" method="post">
+                <button id="logout" type="submit" class="nav-link btn btn-link text-dark border-0">Logout</button>
             </form>
         </li>
     }
     else
     {
         <li class="nav-item">
-            <a class="nav-link text-dark" asp-page="/Account/Register">Register</a>
+            <a class="nav-link text-dark" id="register" asp-page="/Account/Register">Register</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link text-dark" asp-page="/Account/Login">Login</a>
+            <a class="nav-link text-dark" id="login" asp-page="/Account/Login">Login</a>
         </li>
     }
 </ul>

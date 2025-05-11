@@ -102,6 +102,17 @@ builder.Services.AddHttpClient("ApiClient", client =>
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
+builder.Services.AddRazorPages(options =>
+{
+    options.Conventions.AllowAnonymousToPage("/Account/Login");
+    options.Conventions.AllowAnonymousToPage("/Account/Register");
+    options.Conventions.AllowAnonymousToPage("/Account/ConfirmEmail");
+    options.Conventions.AllowAnonymousToPage("/Account/RegistrationConfirmation");
+    options.Conventions.AllowAnonymousToPage("/Account/ResendEmailConfirmation");
+    options.Conventions.AllowAnonymousToPage("/Account/ForgotPassword");   
+    options.Conventions.AllowAnonymousToPage("/Account/ResetPassword");  
+});
+
 builder.Services.AddControllers();
 builder.Services.AddRazorPages(options =>
 {
