@@ -1,3 +1,4 @@
+using FitnessTracker.Application.Common; 
 using FitnessTracker.Application.DTOs.MuscleGroup;
 using FitnessTracker.Application.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,21 +22,43 @@ namespace FitnessTracker.WebUI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MuscleGroupDto>>> GetAllMuscleGroups()
         {
-            var muscleGroups = await _muscleGroupService.GetAllAsync();
-            return Ok(muscleGroups);
+            var result = await _muscleGroupService.GetAllAsync();
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value); 
+            }
+            
+            var errorMessage = result.Error?.Message ?? "An unknown error occurred.";
+            return result.ErrorType switch
+            {
+                ErrorType.NotFound => NotFound(new { Message = errorMessage }),
+                ErrorType.Validation => BadRequest(new { Message = errorMessage }),
+                ErrorType.Unauthorized => Unauthorized(new { Message = errorMessage }),
+                ErrorType.Conflict => Conflict(new { Message = errorMessage }),
+                ErrorType.Failure => BadRequest(new { Message = errorMessage }),
+                ErrorType.Unexpected or _ => StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred on the server." }),
+            };
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<MuscleGroupDto>> GetMuscleGroupById(int id)
         {
-            var muscleGroup = await _muscleGroupService.GetByIdAsync(id);
-
-            if (muscleGroup == null)
+            var result = await _muscleGroupService.GetByIdAsync(id);
+            if (result.IsSuccess)
             {
-                return NotFound(new { Message = $"Muscle group with ID {id} not found." });
+                return Ok(result.Value);
             }
 
-            return Ok(muscleGroup);
+            var errorMessage = result.Error?.Message ?? "An unknown error occurred.";
+            return result.ErrorType switch
+            {
+                ErrorType.NotFound => NotFound(new { Message = errorMessage }),
+                ErrorType.Validation => BadRequest(new { Message = errorMessage }),
+                ErrorType.Unauthorized => Unauthorized(new { Message = errorMessage }),
+                ErrorType.Conflict => Conflict(new { Message = errorMessage }),
+                ErrorType.Failure => BadRequest(new { Message = errorMessage }),
+                ErrorType.Unexpected or _ => StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred on the server." }),
+            };
         }
 
         [HttpPost]
@@ -44,19 +67,23 @@ namespace FitnessTracker.WebUI.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            try
+            var result = await _muscleGroupService.CreateAsync(createDto);
+            
+            if (result.IsSuccess)
             {
-                var createdMuscleGroup = await _muscleGroupService.CreateAsync(createDto);
-                return CreatedAtAction(nameof(GetMuscleGroupById), new { id = createdMuscleGroup.Id }, createdMuscleGroup);
+                return CreatedAtAction(nameof(GetMuscleGroupById), new { id = result.Value.Id }, result.Value);
             }
-            catch (InvalidOperationException ex) 
+
+            var errorMessage = result.Error?.Message ?? "An unknown error occurred.";
+            return result.ErrorType switch
             {
-                return Conflict(new { Message = ex.Message }); 
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "An unexpected error occurred. Please try again later.");
-            }
+                ErrorType.NotFound => NotFound(new { Message = errorMessage }),
+                ErrorType.Validation => BadRequest(new { Message = errorMessage }),
+                ErrorType.Unauthorized => Unauthorized(new { Message = errorMessage }),
+                ErrorType.Conflict => Conflict(new { Message = errorMessage }),
+                ErrorType.Failure => BadRequest(new { Message = errorMessage }),
+                ErrorType.Unexpected or _ => StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred on the server." }),
+            };
         }
 
         [HttpPut("{id}")]
@@ -65,48 +92,44 @@ namespace FitnessTracker.WebUI.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            try
+            var result = await _muscleGroupService.UpdateAsync(id, updateDto);
+            if (result.IsSuccess)
             {
-                var success = await _muscleGroupService.UpdateAsync(id, updateDto);
-                if (success)
-                {
-                    return NoContent();
-                }
+                return NoContent();
+            }
 
-                var exists = await _muscleGroupService.GetByIdAsync(id);
-                if (exists == null)
-                {
-                    return NotFound(new { Message = $"Muscle group with ID {id} not found." });
-                }
-                return BadRequest(new { Message = "Muscle group update failed or no changes were detected." });
-            }
-            catch (InvalidOperationException ex) 
+            var errorMessage = result.Error?.Message ?? "An unknown error occurred.";
+            return result.ErrorType switch
             {
-                return Conflict(new { Message = ex.Message });
-            }
-            catch (Exception) 
-            {
-                return StatusCode(500, "An unexpected error occurred. Please try again later.");
-            }
+                ErrorType.NotFound => NotFound(new { Message = errorMessage }),
+                ErrorType.Validation => BadRequest(new { Message = errorMessage }),
+                ErrorType.Unauthorized => Unauthorized(new { Message = errorMessage }),
+                ErrorType.Conflict => Conflict(new { Message = errorMessage }),
+                ErrorType.Failure => BadRequest(new { Message = errorMessage }),
+                ErrorType.Unexpected or _ => StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred on the server." }),
+            };
         }
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> DeleteMuscleGroup(int id)
         {
-            try
+            var result = await _muscleGroupService.DeleteAsync(id);
+            if (result.IsSuccess)
             {
-                var success = await _muscleGroupService.DeleteAsync(id);
-                if (success)
-                {
-                    return NoContent();
-                }
-                return NotFound(new { Message = $"Muscle group with ID {id} not found or could not be deleted." });
+                return NoContent();
             }
-            catch (Exception) 
+            
+            var errorMessage = result.Error?.Message ?? "An unknown error occurred.";
+            return result.ErrorType switch
             {
-                return StatusCode(500, "An unexpected error occurred. Please try again later.");
-            }
+                ErrorType.NotFound => NotFound(new { Message = errorMessage }),
+                ErrorType.Validation => BadRequest(new { Message = errorMessage }),
+                ErrorType.Unauthorized => Unauthorized(new { Message = errorMessage }),
+                ErrorType.Conflict => Conflict(new { Message = errorMessage }),
+                ErrorType.Failure => BadRequest(new { Message = errorMessage }),
+                ErrorType.Unexpected or _ => StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred on the server." }),
+            };
         }
     }
 }

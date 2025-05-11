@@ -1,9 +1,8 @@
+using FitnessTracker.Application.Common;
 using FitnessTracker.Application.DTOs.Accounts;
 using FitnessTracker.Application.Interfaces;
 using FitnessTracker.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.WebUtilities;
-using System.Text;
 
 namespace FitnessTracker.Application.Services
 {
@@ -23,15 +22,13 @@ namespace FitnessTracker.Application.Services
             _jwtTokenGenerator = jwtTokenGenerator;
         }
 
-        public async Task<UserRegistrationResult> RegisterUserAndPrepareConfirmationAsync(UserRegistrationDto dto)
+        public async Task<Result<(ApplicationUser User, string ConfirmationToken)>> RegisterUserAsync(UserRegistrationDto dto)
         {
-            var registrationResultOutput = new UserRegistrationResult();
-
             var existingUser = await _userManager.FindByEmailAsync(dto.Email);
             if (existingUser != null)
             {
-                registrationResultOutput.IdentityResult = IdentityResult.Failed(new IdentityError { Code = "EmailInUse", Description = "Email is already in use." });
-                return registrationResultOutput;
+                return Result<(ApplicationUser User, string ConfirmationToken)>.Conflict(
+                    $"An account with email '{dto.Email}' already exists.", "EmailInUse");
             }
 
             var user = new ApplicationUser
@@ -44,76 +41,62 @@ namespace FitnessTracker.Application.Services
             };
 
             var createResult = await _userManager.CreateAsync(user, dto.Password);
-            registrationResultOutput.IdentityResult = createResult;
-            registrationResultOutput.User = user;
 
-            if (createResult.Succeeded)
+            if (!createResult.Succeeded)
             {
-                if (!await _roleManager.RoleExistsAsync("User"))
-                {
-                    var roleResult = await _roleManager.CreateAsync(new IdentityRole("User"));
-                }
-                var addToRoleResult = await _userManager.AddToRoleAsync(user, "User");
-
-                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                registrationResultOutput.ConfirmationToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-                registrationResultOutput.RequiresEmailConfirmation = true;
+                var errorMessages = string.Join(" ", createResult.Errors.Select(e => e.Description));
+                return Result<(ApplicationUser User, string ConfirmationToken)>.ValidationFailed(
+                    errorMessages, createResult.Errors.FirstOrDefault()?.Code ?? "RegistrationFailure");
             }
 
-            return registrationResultOutput;
+            if (!await _roleManager.RoleExistsAsync("User"))
+            {
+                await _roleManager.CreateAsync(new IdentityRole("User")); 
+            }
+            await _userManager.AddToRoleAsync(user, "User"); 
+
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            
+            return Result<(ApplicationUser User, string ConfirmationToken)>.Success((user, token));
         }
 
         public async Task<LoginResponseDto> GenerateLoginResponseAsync(ApplicationUser user)
         {
-
             var tokenDetails = await _jwtTokenGenerator.GenerateTokenDetailsAsync(user);
             var userRoles = await _userManager.GetRolesAsync(user);
 
             return new LoginResponseDto
             {
-                IsSuccess = true,
-                Message = "Login successful.",
-                Token = tokenDetails.Token,
-                ExpiresOn = tokenDetails.ExpiresOn,
-                UserId = user.Id,
-                Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Roles = userRoles ?? new List<string>()
+                IsSuccess = true, Message = "Login successful.", Token = tokenDetails.Token,
+                ExpiresOn = tokenDetails.ExpiresOn, UserId = user.Id, Email = user.Email,
+                FirstName = user.FirstName, LastName = user.LastName, Roles = userRoles ?? new List<string>()
             };
         }
 
-        public async Task<ResendConfirmationResult> PrepareResendConfirmationAsync(string email)
+        public async Task<Result<(ApplicationUser User, string ConfirmationToken)>> PrepareResendConfirmationTokenAsync(string email)
         {
-            var resultOutput = new ResendConfirmationResult();
             var user = await _userManager.FindByEmailAsync(email);
 
             if (user == null)
             {
-                resultOutput.UserFound = false;
-                return resultOutput;
+                return Result<(ApplicationUser User, string ConfirmationToken)>.NotFound(
+                    "User not found. A generic message will be shown to the client for privacy.");
             }
-
-            resultOutput.UserFound = true;
-            resultOutput.User = user;
-
-            if (string.IsNullOrEmpty(user.Email))
+            
+            if (string.IsNullOrEmpty(user.Email)) 
             {
-                 resultOutput.UserFound = false;
-                 return resultOutput;
+                 return Result<(ApplicationUser User, string ConfirmationToken)>.Failure(
+                     "User account has invalid email data.", ErrorType.Unexpected);
             }
 
             if (user.EmailConfirmed)
             {
-                resultOutput.AlreadyConfirmed = true;
-                return resultOutput;
+                return Result<(ApplicationUser User, string ConfirmationToken)>.Conflict(
+                    "This email address has already been confirmed.", "EmailAlreadyConfirmed");
             }
 
-            resultOutput.AlreadyConfirmed = false;
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            resultOutput.ConfirmationToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-            
-            return resultOutput;
+            return Result<(ApplicationUser User, string ConfirmationToken)>.Success((user, token));
         }
     }
 }

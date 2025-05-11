@@ -1,3 +1,4 @@
+using FitnessTracker.Application.Common; 
 using FitnessTracker.Application.DTOs.Exercise;
 using FitnessTracker.Application.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer; 
@@ -21,20 +22,45 @@ namespace FitnessTracker.WebUI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ExerciseDto>>> GetAllExercises()
         {
-            var exercises = await _exerciseService.GetAllExercisesAsync();
-            return Ok(exercises);
+            var result = await _exerciseService.GetAllExercisesAsync();
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+            
+            var errorMessage = result.Error?.Message ?? "An unknown error occurred.";
+            return result.ErrorType switch
+            {
+                ErrorType.NotFound => NotFound(new { Message = errorMessage }),
+                ErrorType.Validation => BadRequest(new { Message = errorMessage }),
+                ErrorType.Unauthorized => Unauthorized(new { Message = errorMessage }),
+                ErrorType.Conflict => Conflict(new { Message = errorMessage }),
+                ErrorType.Failure => BadRequest(new { Message = errorMessage }),
+                ErrorType.Unexpected => StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred on the server." }),
+                _ => StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An undefined error occurred on the server." }) // Default catch-all
+            };
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ExerciseDto>> GetExerciseById(int id)
         {
-            var exercise = await _exerciseService.GetExerciseByIdAsync(id);
-
-            if (exercise == null)
+            var result = await _exerciseService.GetExerciseByIdAsync(id);
+            if (result.IsSuccess)
             {
-                return NotFound(new { Message = $"Exercise with ID {id} not found." });
+                return Ok(result.Value);
             }
-            return Ok(exercise);
+
+            var errorMessage = result.Error?.Message ?? "An unknown error occurred.";
+            return result.ErrorType switch
+            {
+                ErrorType.NotFound => NotFound(new { Message = errorMessage }),
+                ErrorType.Validation => BadRequest(new { Message = errorMessage }),
+                ErrorType.Unauthorized => Unauthorized(new { Message = errorMessage }),
+                ErrorType.Conflict => Conflict(new { Message = errorMessage }),
+                ErrorType.Failure => BadRequest(new { Message = errorMessage }),
+                ErrorType.Unexpected => StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred on the server." }),
+                _ => StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An undefined error occurred on the server." })
+            };
         }
 
         [HttpPost]
@@ -46,23 +72,23 @@ namespace FitnessTracker.WebUI.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            var result = await _exerciseService.CreateExerciseAsync(createDto);
+            if (result.IsSuccess)
             {
-                var createdExercise = await _exerciseService.CreateExerciseAsync(createDto);
-                return CreatedAtAction(nameof(GetExerciseById), new { id = createdExercise.Id }, createdExercise);
+                return CreatedAtAction(nameof(GetExerciseById), new { id = result.Value.Id }, result.Value);
             }
-            catch (KeyNotFoundException ex)
+
+            var errorMessage = result.Error?.Message ?? "An unknown error occurred.";
+            return result.ErrorType switch
             {
-                return BadRequest(new { Message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(new { Message = ex.Message });
-            }
-            catch (System.Exception) 
-            {
-                return StatusCode(500, "An unexpected error occurred.");
-            }
+                ErrorType.Validation => BadRequest(new { Message = errorMessage }), 
+                ErrorType.Conflict => Conflict(new { Message = errorMessage }),   
+                ErrorType.Unauthorized => Unauthorized(new { Message = errorMessage }),
+                ErrorType.NotFound => NotFound(new { Message = errorMessage }), 
+                ErrorType.Failure => BadRequest(new { Message = errorMessage }),
+                ErrorType.Unexpected => StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred on the server." }),
+                _ => StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An undefined error occurred on the server." })
+            };
         }
 
         [HttpPut("{id}")]
@@ -74,50 +100,46 @@ namespace FitnessTracker.WebUI.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
+            var result = await _exerciseService.UpdateExerciseAsync(id, updateDto);
+            if (result.IsSuccess)
             {
-                var updatedExercise = await _exerciseService.UpdateExerciseAsync(id, updateDto);
+                return Ok(result.Value);
+            }
 
-                if (updatedExercise == null)
-                {
-                    return NotFound(new { Message = $"Exercise with ID {id} not found." });
-                }
-                return Ok(updatedExercise);
-            }
-            catch (KeyNotFoundException ex) 
+            var errorMessage = result.Error?.Message ?? "An unknown error occurred.";
+            return result.ErrorType switch
             {
-                return BadRequest(new { Message = ex.Message });
-            }
-            catch (InvalidOperationException ex) 
-            {
-                return Conflict(new { Message = ex.Message });
-            }
-             catch (System.Exception)
-            {
-                return StatusCode(500, "An unexpected error occurred.");
-            }
+                ErrorType.NotFound => NotFound(new { Message = errorMessage }),
+                ErrorType.Validation => BadRequest(new { Message = errorMessage }),
+                ErrorType.Conflict => Conflict(new { Message = errorMessage }),
+                ErrorType.Unauthorized => Unauthorized(new { Message = errorMessage }),
+                ErrorType.Failure => BadRequest(new { Message = errorMessage }),
+                ErrorType.Unexpected => StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred on the server." }),
+                _ => StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An undefined error occurred on the server." })
+            };
         }
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> DeleteExercise(int id)
         {
-            try
+            var result = await _exerciseService.DeleteExerciseAsync(id);
+            if (result.IsSuccess)
             {
-                var success = await _exerciseService.DeleteExerciseAsync(id);
-                if (success)
-                {
-                    return NoContent();
-                }
-                else
-                {
-                    return NotFound(new { Message = $"Exercise with ID {id} not found." });
-                }
+                return NoContent();
             }
-            catch (System.Exception) 
+            
+            var errorMessage = result.Error?.Message ?? "An unknown error occurred.";
+            return result.ErrorType switch
             {
-                return StatusCode(500, "An unexpected error occurred.");
-            }
+                ErrorType.NotFound => NotFound(new { Message = errorMessage }),
+                ErrorType.Conflict => Conflict(new { Message = errorMessage }), 
+                ErrorType.Validation => BadRequest(new { Message = errorMessage }),
+                ErrorType.Unauthorized => Unauthorized(new { Message = errorMessage }),
+                ErrorType.Failure => BadRequest(new { Message = errorMessage }),
+                ErrorType.Unexpected => StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred on the server." }),
+                _ => StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An undefined error occurred on the server." })
+            };
         }
     }
 }

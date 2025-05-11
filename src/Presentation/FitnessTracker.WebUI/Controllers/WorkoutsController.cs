@@ -1,3 +1,4 @@
+using FitnessTracker.Application.Common;
 using FitnessTracker.Application.DTOs.Workout;
 using FitnessTracker.Application.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,8 +22,7 @@ namespace FitnessTracker.WebUI.Controllers
 
         private string? GetCurrentUserId()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
-            return userId;
+            return User.FindFirstValue(ClaimTypes.NameIdentifier); 
         }
 
         [HttpGet]
@@ -31,11 +31,16 @@ namespace FitnessTracker.WebUI.Controllers
             var userId = GetCurrentUserId();
             if (userId == null)
             {
-                return Unauthorized(new { Message = "User ID not found in token or token invalid." });
+                return Unauthorized(new { Message = "User ID not found in token." });
             }
 
-            var workouts = await _workoutService.GetUserWorkoutsAsync(userId);
-            return Ok(workouts);
+            var result = await _workoutService.GetUserWorkoutsAsync(userId);
+            if (result.IsSuccess)
+            {
+                return Ok(result.Value);
+            }
+            var errorMessage = result.Error?.Message ?? "An unexpected error occurred.";
+            return StatusCode(StatusCodes.Status500InternalServerError, new { Message = errorMessage });
         }
 
         [HttpGet("{id:int}")]
@@ -44,17 +49,22 @@ namespace FitnessTracker.WebUI.Controllers
             var userId = GetCurrentUserId();
             if (userId == null)
             {
-                return Unauthorized(new { Message = "User ID not found in token or token invalid." });
+                return Unauthorized(new { Message = "User ID not found in token." });
             }
 
-            var workout = await _workoutService.GetWorkoutDetailsAsync(id, userId);
-
-            if (workout == null)
+            var result = await _workoutService.GetWorkoutDetailsAsync(id, userId);
+            if (result.IsSuccess)
             {
-                return NotFound(new { Message = $"Workout with ID {id} not found or access denied." });
+                return Ok(result.Value);
             }
-
-            return Ok(workout);
+            
+            var errorMessage = result.Error?.Message ?? "An unknown error occurred.";
+            return result.ErrorType switch
+            {
+                ErrorType.NotFound => NotFound(new { Message = errorMessage }),
+                ErrorType.Unauthorized => Unauthorized(new { Message = errorMessage }),
+                ErrorType.Unexpected or _ => StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected server error occurred." }),
+            };
         }
 
         [HttpPost]
@@ -63,81 +73,55 @@ namespace FitnessTracker.WebUI.Controllers
             var userId = GetCurrentUserId();
             if (userId == null)
             {
-                return Unauthorized(new { Message = "User ID not found in token or token invalid." });
+                return Unauthorized(new { Message = "User ID not found in token." });
             }
-
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid) 
             {
                 return BadRequest(ModelState);
             }
 
-            try
+            var result = await _workoutService.LogWorkoutAsync(logDto, userId);
+            if (result.IsSuccess)
             {
-                var createdWorkout = await _workoutService.LogWorkoutAsync(logDto, userId);
-                return CreatedAtAction(nameof(GetWorkoutDetails), new { id = createdWorkout.Id }, createdWorkout);
+                return CreatedAtAction(nameof(GetWorkoutDetails), new { id = result.Value.Id }, result.Value);
             }
-            catch (ArgumentException ex)
+
+            var errorMessage = result.Error?.Message ?? "An unknown error occurred.";
+            return result.ErrorType switch
             {
-                return BadRequest(new { Message = ex.Message });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return BadRequest(new { Message = ex.Message }); 
-            }
-            catch (System.Exception) 
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred while logging workout." });
-            }
+                ErrorType.Validation => BadRequest(new { Message = errorMessage }),
+                ErrorType.Unexpected or _ => StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected server error occurred." }),
+            };
         }
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateWorkout(int id, [FromBody] UpdateWorkoutDto updateDto)
+        public async Task<ActionResult<WorkoutDetailDto>> UpdateWorkout(int id, [FromBody] UpdateWorkoutDto updateDto)
         {
             var userId = GetCurrentUserId();
             if (userId == null)
             {
-                return Unauthorized(new { Message = "User ID not found in token or token invalid." });
+                return Unauthorized(new { Message = "User ID not found in token." });
             }
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            try
+            var result = await _workoutService.UpdateWorkoutAsync(id, userId, updateDto);
+            if (result.IsSuccess)
             {
-                var success = await _workoutService.UpdateWorkoutAsync(id, userId, updateDto);
+                return Ok(result.Value);
+            }
 
-                if (success)
-                {
-                    var updatedWorkoutDetails = await _workoutService.GetWorkoutDetailsAsync(id, userId);
-                    if (updatedWorkoutDetails == null) {
-                        return NotFound(new { Message = $"Workout with ID {id} was updated but could not be retrieved."});
-                    }
-                    return Ok(updatedWorkoutDetails);
-                }
-                else
-                {
-                    var workoutExists = await _workoutService.GetWorkoutDetailsAsync(id, userId);
-                    if (workoutExists == null)
-                    {
-                         return NotFound(new { Message = $"Workout with ID {id} not found or access denied." });
-                    }
-                    return BadRequest(new { Message = "Failed to update workout. Please check data and try again."});
-                }
-            }
-            catch (ArgumentException ex) 
+            var errorMessage = result.Error?.Message ?? "An unknown error occurred.";
+            return result.ErrorType switch
             {
-                return BadRequest(new { Message = ex.Message });
-            }
-            catch (KeyNotFoundException ex) 
-            {
-                return BadRequest(new { Message = ex.Message });
-            }
-            catch (Exception) 
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred while updating workout."});
-            }
+                ErrorType.NotFound => NotFound(new { Message = errorMessage }),
+                ErrorType.Validation => BadRequest(new { Message = errorMessage }),
+                ErrorType.Unauthorized => Unauthorized(new { Message = errorMessage }),
+                ErrorType.Failure => BadRequest(new {Message = errorMessage}),
+                ErrorType.Unexpected or _ => StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected server error occurred." }),
+            };
         }
 
         [HttpDelete("{id:int}")] 
@@ -146,25 +130,23 @@ namespace FitnessTracker.WebUI.Controllers
              var userId = GetCurrentUserId();
             if (userId == null)
             {
-                return Unauthorized(new { Message = "User ID not found in token or token invalid."});
+                return Unauthorized(new { Message = "User ID not found in token."});
             }
 
-            try
+            var result = await _workoutService.DeleteWorkoutAsync(id, userId);
+            if (result.IsSuccess)
             {
-                var success = await _workoutService.DeleteWorkoutAsync(id, userId);
-                if (success)
-                {
-                    return NoContent();
-                }
-                else
-                {
-                    return NotFound(new { Message = $"Workout with ID {id} not found or access denied." });
-                }
+                return NoContent();
             }
-            catch (System.Exception) 
+
+            var errorMessage = result.Error?.Message ?? "An unknown error occurred.";
+            return result.ErrorType switch
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected error occurred while deleting workout."});
-            }
+                ErrorType.NotFound => NotFound(new { Message = errorMessage }),
+                ErrorType.Conflict => Conflict(new { Message = errorMessage }),
+                ErrorType.Failure => BadRequest(new {Message = errorMessage}),
+                ErrorType.Unexpected or _ => StatusCode(StatusCodes.Status500InternalServerError, new { Message = "An unexpected server error occurred." }),
+            };
         }
     }
 }

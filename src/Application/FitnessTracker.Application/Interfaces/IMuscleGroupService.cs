@@ -1,13 +1,16 @@
+using FitnessTracker.Application.Common;
 using FitnessTracker.Application.DTOs.MuscleGroup;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace FitnessTracker.Application.Interfaces
 {
     public interface IMuscleGroupService
     {
-        Task<IEnumerable<MuscleGroupDto>> GetAllAsync();
-        Task<MuscleGroupDto?> GetByIdAsync(int id);
-        Task<MuscleGroupDto> CreateAsync(CreateMuscleGroupDto createDto);
-        Task<bool> UpdateAsync(int id, UpdateMuscleGroupDto updateDto);
-        Task<bool> DeleteAsync(int id);
+        Task<Result<IEnumerable<MuscleGroupDto>>> GetAllAsync();
+        Task<Result<MuscleGroupDto>> GetByIdAsync(int id); 
+        Task<Result<MuscleGroupDto>> CreateAsync(CreateMuscleGroupDto createDto);
+        Task<Result> UpdateAsync(int id, UpdateMuscleGroupDto updateDto); 
+        Task<Result> DeleteAsync(int id);
     }
 }
