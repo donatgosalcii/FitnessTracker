@@ -20,6 +20,10 @@
     <_ContentIncludedByDefault Remove="Pages\MuscleGroups\Exercises\Index.cshtml" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\images\profiles\" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>

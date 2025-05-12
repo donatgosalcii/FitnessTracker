@@ -1,0 +1,78 @@
+@page
+@model FitnessTracker.WebUI.Pages.Account.Manage.EditProfileModel
+@{
+    ViewData["Title"] = "Edit My Profile";
+    Layout = "_Layout"; 
+}
+
+<h4>@ViewData["Title"]</h4>
+
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+    <div class="alert alert-danger mt-3" role="alert">
+        @Model.StatusMessage
+    </div>
+}
+<div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+<div class="row">
+    <div class="col-md-8">
+        <form method="post" id="profile-form" enctype="multipart/form-data"> 
+            
+            @if (Model.CurrentReadOnlyProfileData != null)
+            {
+                <div class="mb-1"><small><strong>Username:</strong> @Model.CurrentReadOnlyProfileData.UserName</small></div>
+                <div class="mb-3"><small><strong>Email:</strong> @Model.CurrentReadOnlyProfileData.Email</small></div>
+                <hr />
+
+                @if (!string.IsNullOrEmpty(Model.CurrentReadOnlyProfileData.ProfilePictureUrl))
+                {
+                    <div class="mb-3">
+                        <label>Current Profile Picture:</label><br/>
+                        <img src="@Model.CurrentReadOnlyProfileData.ProfilePictureUrl" alt="Profile Picture" style="max-height: 150px; max-width: 150px; border-radius: 50%; object-fit: cover;" 
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                        <span style="display:none;">Could not load current image.</span>
+                    </div>
+                }
+            }
+
+            <div class="form-floating mb-3">
+                <input asp-for="ProfileInput.FirstName" class="form-control" placeholder="First Name" />
+                <label asp-for="ProfileInput.FirstName"></label>
+                <span asp-validation-for="ProfileInput.FirstName" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="ProfileInput.LastName" class="form-control" placeholder="Last Name" />
+                <label asp-for="ProfileInput.LastName"></label>
+                <span asp-validation-for="ProfileInput.LastName" class="text-danger"></span>
+            </div>
+            
+            <div class="mb-3">
+                <label asp-for="ProfilePictureFile" class="form-label">Upload New Profile Picture (optional)</label>
+                <input asp-for="ProfilePictureFile" type="file" class="form-control" accept="image/jpeg, image/png, image/gif" />
+                <small class="form-text text-muted">Max 2MB. JPG, PNG, GIF allowed. Leave blank to make no changes to current picture.</small>
+                <span asp-validation-for="ProfilePictureFile" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <textarea asp-for="ProfileInput.Bio" class="form-control" placeholder="Bio" style="height: 100px"></textarea>
+                <label asp-for="ProfileInput.Bio">Bio</label>
+                <span asp-validation-for="ProfileInput.Bio" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="ProfileInput.Location" class="form-control" placeholder="Location" />
+                <label asp-for="ProfileInput.Location">Location</label>
+                <span asp-validation-for="ProfileInput.Location" class="text-danger"></span>
+            </div>
+
+            <button id="update-profile-button" type="submit" class="btn btn-primary">Save Profile</button>
+            <a asp-page="./MyProfile" class="btn btn-link">Cancel</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
