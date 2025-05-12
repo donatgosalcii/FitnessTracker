@@ -1,0 +1,63 @@
+@page
+@model FitnessTracker.WebUI.Pages.Account.Manage.MyProfileModel
+@{
+    ViewData["Title"] = "My Profile";
+    Layout = "_Layout"; 
+}
+
+<h4>@ViewData["Title"]</h4>
+
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+    <div class="alert alert-info mt-3" role="alert"> 
+        @Model.StatusMessage
+    </div>
+}
+
+@if (Model.Profile != null)
+{
+    <div class="row mt-3">
+        <div class="col-md-3 text-center">
+            @if (!string.IsNullOrEmpty(Model.Profile.ProfilePictureUrl))
+            {
+                <img src="@Model.Profile.ProfilePictureUrl" alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;" />
+            }
+            else
+            {
+                <img src="https://via.placeholder.com/150" alt="Default Profile Picture" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px;" />
+            }
+            <a asp-page="./EditProfile" class="btn btn-primary btn-sm">Edit Profile</a>
+        </div>
+        <div class="col-md-9">
+            <dl class="row">
+                <dt class="col-sm-3">Username:</dt>
+                <dd class="col-sm-9">@Model.Profile.UserName</dd>
+
+                <dt class="col-sm-3">Email:</dt>
+                <dd class="col-sm-9">@Model.Profile.Email</dd>
+
+                <dt class="col-sm-3">First Name:</dt>
+                <dd class="col-sm-9">@Model.Profile.FirstName</dd>
+
+                <dt class="col-sm-3">Last Name:</dt>
+                <dd class="col-sm-9">@Model.Profile.LastName</dd>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Profile.Bio))
+                {
+                    <dt class="col-sm-3">Bio:</dt>
+                    <dd class="col-sm-9">@Model.Profile.Bio</dd>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Model.Profile.Location))
+                {
+                    <dt class="col-sm-3">Location:</dt>
+                    <dd class="col-sm-9">@Model.Profile.Location</dd>
+                }
+            </dl>
+        </div>
+    </div>
+}
+else if (string.IsNullOrEmpty(Model.StatusMessage)) 
+{
+    <p>Could not load profile information.</p>
+}
