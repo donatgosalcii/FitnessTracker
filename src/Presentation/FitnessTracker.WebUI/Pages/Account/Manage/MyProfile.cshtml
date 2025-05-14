@@ -5,59 +5,81 @@
     Layout = "_Layout"; 
 }
 
-<h4>@ViewData["Title"]</h4>
-
-@if (!string.IsNullOrEmpty(Model.StatusMessage))
-{
-    <div class="alert alert-info mt-3" role="alert"> 
-        @Model.StatusMessage
-    </div>
-}
-
-@if (Model.Profile != null)
-{
-    <div class="row mt-3">
-        <div class="col-md-3 text-center">
-            @if (!string.IsNullOrEmpty(Model.Profile.ProfilePictureUrl))
-            {
-                <img src="@Model.Profile.ProfilePictureUrl" alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;" />
-            }
-            else
-            {
-                <img src="https://via.placeholder.com/150" alt="Default Profile Picture" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px;" />
-            }
-            <a asp-page="./EditProfile" class="btn btn-primary btn-sm">Edit Profile</a>
+<div class="container py-5">
+    @if (!string.IsNullOrEmpty(Model.StatusMessage))
+    {
+        <div class="alert alert-info mt-3" role="alert"> 
+            @Model.StatusMessage
         </div>
-        <div class="col-md-9">
-            <dl class="row">
-                <dt class="col-sm-3">Username:</dt>
-                <dd class="col-sm-9">@Model.Profile.UserName</dd>
+    }
 
-                <dt class="col-sm-3">Email:</dt>
-                <dd class="col-sm-9">@Model.Profile.Email</dd>
-
-                <dt class="col-sm-3">First Name:</dt>
-                <dd class="col-sm-9">@Model.Profile.FirstName</dd>
-
-                <dt class="col-sm-3">Last Name:</dt>
-                <dd class="col-sm-9">@Model.Profile.LastName</dd>
-
-                @if (!string.IsNullOrWhiteSpace(Model.Profile.Bio))
-                {
-                    <dt class="col-sm-3">Bio:</dt>
-                    <dd class="col-sm-9">@Model.Profile.Bio</dd>
-                }
-
-                @if (!string.IsNullOrWhiteSpace(Model.Profile.Location))
-                {
-                    <dt class="col-sm-3">Location:</dt>
-                    <dd class="col-sm-9">@Model.Profile.Location</dd>
-                }
-            </dl>
+    @if (Model.Profile != null)
+    {
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <div class="mb-4">
+                            @if (!string.IsNullOrEmpty(Model.Profile.ProfilePictureUrl))
+                            {
+                                <img src="@Model.Profile.ProfilePictureUrl" alt="Profile Picture" 
+                                     class="rounded-circle img-thumbnail shadow" 
+                                     style="width: 200px; height: 200px; object-fit: cover;" />
+                            }
+                            else
+                            {
+                                <img src="https://via.placeholder.com/200" alt="Default Profile Picture" 
+                                     class="rounded-circle img-thumbnail shadow" />
+                            }
+                        </div>
+                        <div class="mt-3">
+                            <a asp-page="./EditProfile" class="btn btn-primary btn-lg px-4">
+                                <i class="fas fa-edit me-2"></i>Edit Profile
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="ps-md-4">
+                            <h1 class="display-4 mb-1">@Model.Profile.FirstName @Model.Profile.LastName</h1>
+                            <h5 class="text-muted mb-4">@@@Model.Profile.UserName</h5>
+                            
+                            @if (!string.IsNullOrWhiteSpace(Model.Profile.Bio))
+                            {
+                                <div class="mb-4">
+                                    <h6 class="text-uppercase small fw-bold mb-2">About Me</h6>
+                                    <p class="lead">@Model.Profile.Bio</p>
+                                </div>
+                            }
+                            
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <div class="p-3 border rounded bg-light">
+                                        <h6 class="text-uppercase small fw-bold mb-2">Contact Information</h6>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fas fa-envelope me-2 text-muted"></i>
+                                            <span>@Model.Profile.Email</span>
+                                        </div>
+                                        @if (!string.IsNullOrWhiteSpace(Model.Profile.Location))
+                                        {
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-map-marker-alt me-2 text-muted"></i>
+                                                <span>@Model.Profile.Location</span>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-}
-else if (string.IsNullOrEmpty(Model.StatusMessage)) 
-{
-    <p>Could not load profile information.</p>
-}
+    }
+    else if (string.IsNullOrEmpty(Model.StatusMessage)) 
+    {
+        <div class="alert alert-warning" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Could not load profile information.
+        </div>
+    }
+</div>
