@@ -63,9 +63,6 @@ publish/
 wwwroot/lib/
 wwwroot/node_modules/
 
-# Entity Framework / Migrations
-Migrations/
-
 # SQL Server
 *.mdf
 *.ldf
