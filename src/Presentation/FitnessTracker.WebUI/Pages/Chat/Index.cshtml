@@ -1,0 +1,179 @@
+@page
+@model FitnessTracker.WebUI.Pages.Chat.IndexModel
+@{
+    ViewData["Title"] = "Chat History";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Your Chat History</h4>
+                    <span><i class="fas fa-robot me-2"></i>Fitness Assistant</span>
+                </div>
+                <div class="card-body">
+                    <div id="full-chat-history" class="full-chat-history mb-3">
+                        <!-- History will be loaded here -->
+                        <div class="text-center p-5" id="loading-history">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Loading your chat history...</p>
+                        </div>
+                        <div class="text-center p-5 d-none" id="empty-history">
+                            <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                            <p>You haven't chatted with the Fitness Assistant yet.</p>
+                            <p>Click the chat bubble in the bottom right corner to start a conversation!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            const fullChatHistory = $('#full-chat-history');
+            const loadingHistory = $('#loading-history');
+            const emptyHistory = $('#empty-history');
+            const antiforgeryToken = $('input[name="__RequestVerificationToken"]').val();
+
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+
+            function groupMessagesByDate(messages) {
+                const groups = {};
+                
+                messages.forEach(msg => {
+                    const date = new Date(msg.timestamp);
+                    const dateKey = date.toLocaleDateString();
+                    
+                    if (!groups[dateKey]) {
+                        groups[dateKey] = [];
+                    }
+                    
+                    groups[dateKey].push(msg);
+                });
+                
+                return groups;
+            }
+
+            async function loadFullChatHistory() {
+                try {
+                    const response = await fetch('/api/Chat/history', {
+                        headers: {
+                            'RequestVerificationToken': antiforgeryToken
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to load chat history');
+                    }
+
+                    const history = await response.json();
+                    
+                    loadingHistory.addClass('d-none');
+                    
+                    if (history.length === 0) {
+                        emptyHistory.removeClass('d-none');
+                        return;
+                    }
+
+                    const groupedHistory = groupMessagesByDate(history);
+                    
+                    let historyHtml = '';
+                    
+                    const sortedDates = Object.keys(groupedHistory).sort((a, b) => {
+                        return new Date(a) - new Date(b);
+                    });
+                    
+                    sortedDates.forEach(date => {
+                        historyHtml += `<div class="chat-date-separator my-4"><hr><span>${date}</span></div>`;
+                        
+                        const messages = groupedHistory[date].sort((a, b) => {
+                            return new Date(a.timestamp) - new Date(b.timestamp);
+                        });
+                        
+                        messages.forEach(msg => {
+                            const messageTime = new Date(msg.timestamp);
+                            const formattedTime = messageTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            
+                            historyHtml += `
+                                <div class="chat-history-item mb-4">
+                                    <div class="chat-history-meta d-flex justify-content-between text-muted small mb-2">
+                                        <span><i class="fas fa-user me-1"></i> You</span>
+                                        <span>${formattedTime}</span>
+                                    </div>
+                                    <div class="chat-history-question p-3 rounded bg-light">
+                                        ${msg.message}
+                                    </div>
+                                    <div class="chat-history-meta d-flex justify-content-between text-muted small mb-2 mt-3">
+                                        <span><i class="fas fa-robot me-1"></i> Fitness Assistant</span>
+                                    </div>
+                                    <div class="chat-history-answer p-3 rounded bg-primary text-white">
+                                        ${msg.response}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    });
+                    
+                    fullChatHistory.html(historyHtml);
+                } catch (error) {
+                    console.error('Error loading chat history:', error);
+                    loadingHistory.addClass('d-none');
+                    fullChatHistory.html(`
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Failed to load chat history. Please refresh the page to try again.
+                        </div>
+                    `);
+                }
+            }
+
+            loadFullChatHistory();
+        });
+    </script>
+}
+
+<style>
+    .full-chat-history {
+        max-height: 800px;
+        overflow-y: auto;
+    }
+    
+    .chat-date-separator {
+        position: relative;
+        text-align: center;
+    }
+    
+    .chat-date-separator span {
+        background-color: var(--card-bg);
+        padding: 0 15px;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        position: relative;
+        top: -12px;
+    }
+    
+    .chat-history-question, .chat-history-answer {
+        border-radius: 12px;
+        word-break: break-word;
+    }
+    
+    [data-theme="dark"] .chat-history-question {
+        background-color: var(--bg-secondary) !important;
+        color: var(--text-primary);
+    }
+    
+    [data-theme="dark"] .chat-date-separator span {
+        background-color: var(--card-bg);
+    }
+</style>
+
+@Html.AntiForgeryToken() 
