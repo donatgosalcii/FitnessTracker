@@ -16,6 +16,8 @@ namespace FitnessTracker.Infrastructure.Data
         public DbSet<Exercise> Exercises { get; set; } = null!;
         public DbSet<Workout> Workouts { get; set; } = null!;
         public DbSet<WorkoutSet> WorkoutSets { get; set; } = null!;
+        public DbSet<WorkoutExercise> WorkoutExercises { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

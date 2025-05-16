@@ -95,6 +95,10 @@ builder.Services.AddScoped<IExerciseRepository, ExerciseRepository>();
 builder.Services.AddScoped<IExerciseService, ExerciseService>();
 builder.Services.AddScoped<IWorkoutRepository, WorkoutRepository>();
 builder.Services.AddScoped<IWorkoutService, WorkoutService>();
+builder.Services.AddScoped<IChatRepository, ChatRepository>();
+
+builder.Services.AddScoped<IAIClient, OllamaAIClient>();
+builder.Services.AddScoped<IChatService, FitnessTracker.Application.Services.ChatService>();
 
 builder.Services.AddHttpClient("ApiClient", client =>
 {

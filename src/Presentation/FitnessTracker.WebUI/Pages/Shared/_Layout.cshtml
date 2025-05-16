@@ -30,10 +30,10 @@
                                 <a class="nav-link text-dark" asp-area="" asp-page="/MuscleGroups/Index">Muscle Groups</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-page="/Exercises/Index">Exercises</a> @* TODO: Create this page *@
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Exercises/Index">Exercises</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-page="/Workouts/Index">My Workouts</a> @* TODO: Create this page *@
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Workouts/Index">My Workouts</a>
                             </li>
                         }
                         
@@ -62,6 +62,8 @@
             © @DateTime.Now.Year - FitnessTracker - <a asp-area="" asp-page="/Privacy">Privacy</a>
         </div>
     </footer>
+
+    <partial name="_ChatWidget" />
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
