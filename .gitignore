@@ -107,6 +107,11 @@ TestResult*/
 *.pfx
 *.publishsettings
 
+appsettings.Development.json
+appsettings.*.json
+!appsettings.json
+Properties/launchSettings.json
+
 # NuGet
 *.nupkg
 *.snupkg
@@ -215,4 +220,3 @@ docker-compose.test.yml
 Dockerfile.*
 docker-data/
 *.pid
-
