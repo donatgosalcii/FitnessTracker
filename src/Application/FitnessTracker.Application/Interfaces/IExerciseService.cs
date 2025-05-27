@@ -1,8 +1,5 @@
-// FitnessTracker.Application/Interfaces/IExerciseService.cs
-using FitnessTracker.Application.Common; // For Result
+using FitnessTracker.Application.Common; 
 using FitnessTracker.Application.DTOs.Exercise;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace FitnessTracker.Application.Interfaces
 {

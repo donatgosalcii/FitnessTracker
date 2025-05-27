@@ -11,6 +11,7 @@ using System.Text;
 using Microsoft.Extensions.Options;
 using FitnessTracker.Infrastructure.Authentication;
 using FitnessTracker.Infrastructure.Repositories;
+using FitnessTracker.Infrastructure.Repositories.Nutrition;
 using Microsoft.AspNetCore.DataProtection;
 using FitnessTracker.Infrastructure.Services;
 
@@ -96,16 +97,36 @@ builder.Services.AddScoped<IExerciseService, ExerciseService>();
 builder.Services.AddScoped<IWorkoutRepository, WorkoutRepository>();
 builder.Services.AddScoped<IWorkoutService, WorkoutService>();
 builder.Services.AddScoped<IChatRepository, ChatRepository>();
-
+builder.Services.AddScoped<IFoodItemRepository, FoodItemRepository>();
+builder.Services.AddScoped<ILoggedFoodItemRepository, LoggedFoodItemRepository>();
+builder.Services.AddScoped<IUserNutritionGoalRepository, UserNutritionGoalRepository>();
+builder.Services.AddScoped<INutritionService, NutritionService>();
 builder.Services.AddScoped<IAIClient, OllamaAIClient>();
 builder.Services.AddScoped<IChatService, FitnessTracker.Application.Services.ChatService>();
 
-builder.Services.AddHttpClient("ApiClient", client =>
+builder.Services.AddHttpClient("ApiClient", client => 
 {
     client.BaseAddress = new Uri("http://localhost:5179/");
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
+builder.Services.AddHttpClient("InternalApiClient", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7115/"); 
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+})
+.ConfigurePrimaryHttpMessageHandler(() =>
+{
+    var handler = new HttpClientHandler();
+    if (builder.Environment.IsDevelopment()) 
+    {
+        handler.ServerCertificateCustomValidationCallback = 
+            HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+    }
+    return handler;
+});
+
+
 builder.Services.AddRazorPages(options =>
 {
     options.Conventions.AllowAnonymousToPage("/Account/Login");
@@ -113,19 +134,11 @@ builder.Services.AddRazorPages(options =>
     options.Conventions.AllowAnonymousToPage("/Account/ConfirmEmail");
     options.Conventions.AllowAnonymousToPage("/Account/RegistrationConfirmation");
     options.Conventions.AllowAnonymousToPage("/Account/ResendEmailConfirmation");
-    options.Conventions.AllowAnonymousToPage("/Account/ForgotPassword");   
-    options.Conventions.AllowAnonymousToPage("/Account/ResetPassword");  
+    options.Conventions.AllowAnonymousToPage("/Account/ForgotPassword");
+    options.Conventions.AllowAnonymousToPage("/Account/ResetPassword");
 });
 
 builder.Services.AddControllers();
-builder.Services.AddRazorPages(options =>
-{
-    options.Conventions.AllowAnonymousToPage("/Account/Login");
-    options.Conventions.AllowAnonymousToPage("/Account/Register");
-    options.Conventions.AllowAnonymousToPage("/Account/ConfirmEmail");
-    options.Conventions.AllowAnonymousToPage("/Account/RegistrationConfirmation");
-    options.Conventions.AllowAnonymousToPage("/Account/ResendEmailConfirmation");
-});
 
 var app = builder.Build();
 
@@ -136,6 +149,7 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Error");
+    app.UseHsts();
 }
 
 app.UseStaticFiles();
@@ -152,6 +166,7 @@ using (var scope = app.Services.CreateScope())
     {
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         string[] roleNames = { "Admin", "User" };
+        var logger = services.GetRequiredService<ILogger<Program>>(); 
         foreach (var roleName in roleNames)
         {
             var roleExist = await roleManager.RoleExistsAsync(roleName);
@@ -160,12 +175,18 @@ using (var scope = app.Services.CreateScope())
                 var roleResult = await roleManager.CreateAsync(new IdentityRole(roleName));
                 if (!roleResult.Succeeded)
                 {
+                    foreach(var error in roleResult.Errors)
+                    {
+                        logger.LogError($"Error creating role {roleName}: {error.Code} - {error.Description}");
+                    }
                 }
             }
         }
     }
-    catch (Exception) 
+    catch (Exception ex)
     {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding roles.");
     }
 }
 

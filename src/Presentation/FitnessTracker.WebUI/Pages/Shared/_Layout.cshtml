@@ -21,24 +21,27 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
+                            <a class="nav-link text-dark @(ViewData["ActivePage"] as string == "Home" ? "active" : "")" asp-area="" asp-page="/Index">Home</a>
                         </li>
                         
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-page="/MuscleGroups/Index">Muscle Groups</a>
+                                <a class="nav-link text-dark @(ViewData["ActivePage"] as string == "MuscleGroups" ? "active" : "")" asp-area="" asp-page="/MuscleGroups/Index">Muscle Groups</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-page="/Exercises/Index">Exercises</a>
+                                <a class="nav-link text-dark @(ViewData["ActivePage"] as string == "Exercises" ? "active" : "")" asp-area="" asp-page="/Exercises/Index">Exercises</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-page="/Workouts/Index">My Workouts</a>
+                                <a class="nav-link text-dark @(ViewData["ActivePage"] as string == "Workouts" ? "active" : "")" asp-area="" asp-page="/Workouts/Index">My Workouts</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark @(ViewData["ActivePage"] as string == "NutritionDashboard" ? "active" : "")" asp-area="" asp-page="/Nutrition/Index">Nutrition</a>
                             </li>
                         }
                         
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
+                            <a class="nav-link text-dark @(ViewData["ActivePage"] as string == "Privacy" ? "active" : "")" asp-area="" asp-page="/Privacy">Privacy</a>
                         </li>
                     </ul>
                     <div class="d-flex align-items-center">

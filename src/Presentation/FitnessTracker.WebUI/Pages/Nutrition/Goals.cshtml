@@ -1,0 +1,55 @@
+@page
+@model FitnessTracker.WebUI.Pages.Nutrition.GoalsModel
+@{
+    ViewData["Title"] = "Nutrition Goals";
+    ViewData["ActivePage"] = "NutritionGoals";
+}
+
+<h4>@ViewData["Title"]</h4>
+
+<partial name="_StatusMessage" model="Model.StatusMessage" />
+
+<div class="row">
+    <div class="col-md-6">
+        <form id="goals-form" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+            
+            <div class="form-floating mb-3">
+                <select asp-for="Input.GoalType" asp-items="Model.FitnessGoalTypesSelectList" class="form-select"> 
+                </select>
+                <label asp-for="Input.GoalType" class="form-label"></label>
+                <span asp-validation-for="Input.GoalType" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="Input.TargetCalories" class="form-control" />
+                <label asp-for="Input.TargetCalories" class="form-label"></label>
+                <span asp-validation-for="Input.TargetCalories" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="Input.TargetProteinGrams" class="form-control" />
+                <label asp-for="Input.TargetProteinGrams" class="form-label"></label>
+                <span asp-validation-for="Input.TargetProteinGrams" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="Input.TargetCarbohydratesGrams" class="form-control" />
+                <label asp-for="Input.TargetCarbohydratesGrams" class="form-label"></label>
+                <span asp-validation-for="Input.TargetCarbohydratesGrams" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="Input.TargetFatGrams" class="form-control" />
+                <label asp-for="Input.TargetFatGrams" class="form-label"></label>
+                <span asp-validation-for="Input.TargetFatGrams" class="text-danger"></span>
+            </div>
+            
+            <button id="update-goals-button" type="submit" class="w-100 btn btn-lg btn-primary">Set Goals</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

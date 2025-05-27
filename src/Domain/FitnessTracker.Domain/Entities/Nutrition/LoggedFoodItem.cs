@@ -6,18 +6,18 @@ namespace FitnessTracker.Domain.Entities.Nutrition
     {
         public int Id { get; set; }
 
-        public string ApplicationUserId { get; set; } = string.Empty; // User who logged this
+        public string ApplicationUserId { get; set; } = string.Empty;
         public virtual ApplicationUser ApplicationUser { get; set; }
 
-        public int FoodItemId { get; set; } // FK to FoodItem
+        public int FoodItemId { get; set; }
         public virtual FoodItem FoodItem { get; set; }
 
-        public DateTime LoggedDate { get; set; } // The date this food was consumed for
-        public DateTime Timestamp { get; set; }    // Actual time it was logged or eaten
+        public DateTime LoggedDate { get; set; }
+        public DateTime Timestamp { get; set; } 
 
         public string MealContext { get; set; } = "Snack";
 
-        public decimal QuantityConsumed { get; set; } // e.g., 1.5 (meaning 1.5 x FoodItem.ServingSize)
+        public decimal QuantityConsumed { get; set; } 
 
         public decimal CalculatedCalories { get; set; }
         public decimal CalculatedProtein { get; set; }

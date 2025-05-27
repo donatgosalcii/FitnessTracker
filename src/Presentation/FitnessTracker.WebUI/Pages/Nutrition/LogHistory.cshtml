@@ -1,0 +1,130 @@
+@page
+@model FitnessTracker.WebUI.Pages.Nutrition.LogHistoryModel
+@{
+    ViewData["Title"] = "Food Log History";
+    ViewData["ActivePage"] = "LogHistory"; 
+}
+
+<h4>@ViewData["Title"]</h4>
+
+<partial name="_StatusMessage" model="Model.StatusMessage" />
+
+<form method="get" class="mb-4 p-3 border rounded bg-light">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+            <label asp-for="StartDate" class="form-label form-label-sm">Start Date</label>
+            <input asp-for="StartDate" type="date" class="form-control form-control-sm" />
+        </div>
+        <div class="col-md-3">
+            <label asp-for="EndDate" class="form-label form-label-sm">End Date</label>
+            <input asp-for="EndDate" type="date" class="form-control form-control-sm" />
+        </div>
+        <div class="col-md-3">
+            <label asp-for="MealFilter" class="form-label form-label-sm">Meal</label>
+            <input asp-for="MealFilter" class="form-control form-control-sm" placeholder="e.g., Breakfast, Snack" />
+        </div>
+        <div class="col-md-3 d-grid gap-2 d-md-block">
+            <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+            <a asp-page="./LogHistory" class="btn btn-outline-secondary btn-sm">Clear Filters</a>
+        </div>
+    </div>
+</form>
+
+
+@if (Model.LoggedItemsHistory != null && Model.LoggedItemsHistory.Items.Any())
+{
+    <div class="table-responsive mb-3">
+        <table class="table table-sm table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Food</th>
+                    <th>Meal</th>
+                    <th class="text-end">Qty</th>
+                    <th class="text-end">Calories</th>
+                    <th class="text-end">Protein (g)</th>
+                    <th class="text-end">Carbs (g)</th>
+                    <th class="text-end">Fat (g)</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.LoggedItemsHistory.Items)
+                {
+                    <tr>
+                        <td>@item.LoggedDate.ToString("yyyy-MM-dd")</td>
+                        <td>
+                            @item.FoodItemName
+                            @if(!string.IsNullOrEmpty(item.FoodItemBrand))
+                            {
+                                <small class="text-muted d-block">(@item.FoodItemBrand)</small>
+                            }
+                        </td>
+                        <td>@item.MealContext</td>
+                        <td class="text-end">@item.QuantityConsumed.ToString("0.##") serv.</td>
+                        <td class="text-end">@item.CalculatedCalories.ToString("0")</td>
+                        <td class="text-end">@item.CalculatedProtein.ToString("0.0")</td>
+                        <td class="text-end">@item.CalculatedCarbohydrates.ToString("0.0")</td>
+                        <td class="text-end">@item.CalculatedFat.ToString("0.0")</td>
+                        <td class="text-center">
+                             <form method="post" asp-page-handler="DeleteLoggedItem" asp-route-loggedItemId="@item.Id"
+                                   onsubmit="return confirm('Are you sure you want to remove this logged item?');">
+                                 <input type="hidden" name="CurrentPage" value="@Model.CurrentPage" />
+                                 @if(Model.StartDate.HasValue) { <input type="hidden" name="StartDate" value="@Model.StartDate.Value.ToString("yyyy-MM-dd")" /> }
+                                 @if(Model.EndDate.HasValue) { <input type="hidden" name="EndDate" value="@Model.EndDate.Value.ToString("yyyy-MM-dd")" /> }
+                                 @if(!string.IsNullOrEmpty(Model.MealFilter)) { <input type="hidden" name="MealFilter" value="@Model.MealFilter" /> }
+                                 
+                                 <button type="submit" class="btn btn-danger btn-sm" title="Remove Logged Item">
+                                     <i class="fas fa-trash-alt"></i>
+                                 </button>
+                             </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.LoggedItemsHistory.TotalPages > 1)
+    {
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                @{
+                    var prevDisabled = !Model.LoggedItemsHistory.HasPreviousPage ? "disabled" : "";
+                    var nextDisabled = !Model.LoggedItemsHistory.HasNextPage ? "disabled" : "";
+                    var routeValues = new Dictionary<string, string?>
+                    {
+                        { "StartDate", Model.StartDate?.ToString("yyyy-MM-dd") },
+                        { "EndDate", Model.EndDate?.ToString("yyyy-MM-dd") },
+                        { "MealFilter", Model.MealFilter }
+                    };
+                }
+                <li class="page-item @prevDisabled">
+                    <a class="page-link" asp-page="./LogHistory" 
+                       asp-all-route-data="@routeValues" asp-route-currentPage="@(Model.LoggedItemsHistory.PageNumber - 1)" 
+                       aria-label="Previous">
+                        <span aria-hidden="true">«</span>
+                    </a>
+                </li>
+                @for (int i = 1; i <= Model.LoggedItemsHistory.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.LoggedItemsHistory.PageNumber ? "active" : "")">
+                        <a class="page-link" asp-page="./LogHistory" 
+                           asp-all-route-data="@routeValues" asp-route-currentPage="@i">@i</a>
+                    </li>
+                }
+                <li class="page-item @nextDisabled">
+                    <a class="page-link" asp-page="./LogHistory" 
+                       asp-all-route-data="@routeValues" asp-route-currentPage="@(Model.LoggedItemsHistory.PageNumber + 1)" 
+                       aria-label="Next">
+                        <span aria-hidden="true">»</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    }
+}
+else
+{
+    <p>No food log entries found matching your criteria. Try adjusting filters or <a asp-page="./LogFood">log some food</a>!</p>
+}

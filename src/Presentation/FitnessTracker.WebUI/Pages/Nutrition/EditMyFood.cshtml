@@ -1,0 +1,97 @@
+@page "{id:int}"
+@model FitnessTracker.WebUI.Pages.Nutrition.EditMyFoodModel
+@{
+    ViewData["Title"] = "Edit Custom Food";
+}
+
+<h4>@ViewData["Title"]: @Model.Input.Name</h4>
+
+<partial name="_StatusMessage" model="Model.StatusMessage" />
+
+<div class="row">
+    <div class="col-md-8 col-lg-6">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+            <input type="hidden" asp-for="Input.Id" />
+
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Name" class="form-control" placeholder="Food Name" />
+                <label asp-for="Input.Name"></label>
+                <span asp-validation-for="Input.Name" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Brand" class="form-control" placeholder="Brand (Optional)" />
+                <label asp-for="Input.Brand"></label>
+                <span asp-validation-for="Input.Brand" class="text-danger"></span>
+            </div>
+            
+            <div class="row g-2 mb-3">
+                <div class="col-md-7">
+                    <div class="form-floating">
+                        <input asp-for="Input.ServingSizeValue" type="number" step="any" class="form-control" placeholder="Serving Size" />
+                        <label asp-for="Input.ServingSizeValue"></label>
+                        <span asp-validation-for="Input.ServingSizeValue" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                     <div class="form-floating">
+                        <select asp-for="Input.ServingUnit" asp-items="Model.ServingUnitSelectList" class="form-select"></select>
+                        <label asp-for="Input.ServingUnit"></label>
+                        <span asp-validation-for="Input.ServingUnit" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="Input.CaloriesPerServing" type="number" step="any" class="form-control" placeholder="Calories" />
+                <label asp-for="Input.CaloriesPerServing"></label>
+                <span asp-validation-for="Input.CaloriesPerServing" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.ProteinPerServing" type="number" step="any" class="form-control" placeholder="Protein (g)" />
+                <label asp-for="Input.ProteinPerServing"></label>
+                <span asp-validation-for="Input.ProteinPerServing" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.CarbohydratesPerServing" type="number" step="any" class="form-control" placeholder="Carbs (g)" />
+                <label asp-for="Input.CarbohydratesPerServing"></label>
+                <span asp-validation-for="Input.CarbohydratesPerServing" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.FatPerServing" type="number" step="any" class="form-control" placeholder="Fat (g)" />
+                <label asp-for="Input.FatPerServing"></label>
+                <span asp-validation-for="Input.FatPerServing" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="Input.FiberPerServing" type="number" step="any" class="form-control" placeholder="Fiber (g) (Optional)" />
+                <label asp-for="Input.FiberPerServing"></label>
+                <span asp-validation-for="Input.FiberPerServing" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.SugarPerServing" type="number" step="any" class="form-control" placeholder="Sugar (g) (Optional)" />
+                <label asp-for="Input.SugarPerServing"></label>
+                <span asp-validation-for="Input.SugarPerServing" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.SodiumPerServing" type="number" step="any" class="form-control" placeholder="Sodium (mg) (Optional)" />
+                <label asp-for="Input.SodiumPerServing"></label>
+                <span asp-validation-for="Input.SodiumPerServing" class="text-danger"></span>
+            </div>
+             <div class="form-floating mb-3">
+                <input asp-for="Input.Barcode" class="form-control" placeholder="Barcode (Optional)" />
+                <label asp-for="Input.Barcode"></label>
+                <span asp-validation-for="Input.Barcode" class="text-danger"></span>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <a asp-page="./MyFoods" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

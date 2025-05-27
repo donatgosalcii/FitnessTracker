@@ -1,0 +1,162 @@
+@page
+@model FitnessTracker.WebUI.Pages.Nutrition.IndexModel
+@{
+    ViewData["Title"] = "Nutrition Dashboard";
+    ViewData["ActivePage"] = "NutritionDashboard"; 
+}
+
+<h4>@ViewData["Title"] - @Model.SelectedDate.ToString("D")</h4>
+
+<partial name="_StatusMessage" model="Model.StatusMessage" />
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <form method="get">
+            <div class="input-group">
+                <input asp-for="SelectedDate" class="form-control" type="date" />
+                <button type="submit" class="btn btn-outline-secondary">View Date</button>
+                @if (Model.SelectedDate.Date != DateTime.Today)
+                {
+                    <a asp-page="./Index" class="btn btn-outline-info">Today</a>
+                }
+            </div>
+        </form>
+    </div>
+    <div class="col-md-6 text-md-end mt-2 mt-md-0">
+        <a asp-page="./LogFood" class="btn btn-primary">Log New Food</a>
+        <a asp-page="./MyFoods" class="btn btn-secondary">Manage My Foods</a>
+        <a asp-page="./Goals" class="btn btn-info">Set Goals</a>
+    </div>
+</div>
+
+
+@if (Model.DailySummary != null)
+{
+    var summary = Model.DailySummary;
+    var goal = summary.Goal;
+
+    <div class="row">
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Calories</h5>
+                    @if (goal != null && goal.TargetCalories > 0)
+                    {
+                        var progress = summary.TotalCaloriesConsumed > 0 ? (summary.TotalCaloriesConsumed / goal.TargetCalories) * 100 : 0;
+                        if (progress > 100) progress = 100;
+                        <div class="progress mb-2" style="height: 20px;">
+                            <div class="progress-bar @(summary.TotalCaloriesConsumed > goal.TargetCalories ? "bg-danger" : "bg-success")" role="progressbar" style="width: @progress.ToString("0")%;" aria-valuenow="@summary.TotalCaloriesConsumed.ToString("0")" aria-valuemin="0" aria-valuemax="@goal.TargetCalories.ToString("0")"></div>
+                        </div>
+                        <p class="card-text fs-4">@summary.TotalCaloriesConsumed.ToString("0") / @goal.TargetCalories.ToString("0") kcal</p>
+                        <p class="card-text @(summary.CaloriesRemaining < 0 ? "text-danger" : "text-success")">
+                            @(summary.CaloriesRemaining < 0 ? $"{Math.Abs(summary.CaloriesRemaining).ToString("0")} over" : $"{summary.CaloriesRemaining.ToString("0")} left")
+                        </p>
+                    }
+                    else
+                    {
+                        <p class="card-text fs-4">@summary.TotalCaloriesConsumed.ToString("0") kcal</p>
+                        @if (goal == null) { <a asp-page="./Goals" class="btn btn-sm btn-outline-primary mt-1">Set Goal</a> }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Protein</h5>
+                     @if (goal != null && goal.TargetProteinGrams > 0)
+                    {
+                        <p class="card-text fs-4">@summary.TotalProteinConsumed.ToString("0.0") / @goal.TargetProteinGrams.ToString("0") g</p>
+                    } else {
+                        <p class="card-text fs-4">@summary.TotalProteinConsumed.ToString("0.0") g</p>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Carbs</h5>
+                    @if (goal != null && goal.TargetCarbohydratesGrams > 0)
+                    {
+                        <p class="card-text fs-4">@summary.TotalCarbohydratesConsumed.ToString("0.0") / @goal.TargetCarbohydratesGrams.ToString("0") g</p>
+                    } else {
+                         <p class="card-text fs-4">@summary.TotalCarbohydratesConsumed.ToString("0.0") g</p>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Fat</h5>
+                     @if (goal != null && goal.TargetFatGrams > 0)
+                    {
+                        <p class="card-text fs-4">@summary.TotalFatConsumed.ToString("0.0") / @goal.TargetFatGrams.ToString("0") g</p>
+                    } else {
+                        <p class="card-text fs-4">@summary.TotalFatConsumed.ToString("0.0") g</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h5>Logged Items for @Model.SelectedDate.ToString("D")</h5>
+    @if (summary.LoggedItems.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr>
+                        <th>Food</th>
+                        <th>Meal</th>
+                        <th>Qty</th>
+                        <th>Calories</th>
+                        <th>Protein</th>
+                        <th>Carbs</th>
+                        <th>Fat</th>
+                        <th>Logged At</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in summary.LoggedItems)
+                    {
+                        <tr>
+                            <td>@item.FoodItemName <small class="text-muted">(@item.FoodItemBrand)</small></td>
+                            <td>@item.MealContext</td>
+                            <td>@item.QuantityConsumed.ToString("0.##") serv.</td>
+                            <td>@item.CalculatedCalories.ToString("0")</td>
+                            <td>@item.CalculatedProtein.ToString("0.0")g</td>
+                            <td>@item.CalculatedCarbohydrates.ToString("0.0")g</td>
+                            <td>@item.CalculatedFat.ToString("0.0")g</td>
+                            <td>@item.Timestamp.ToLocalTime().ToString("g")</td>
+                            <td>
+                                <form method="post" asp-page-handler="DeleteLoggedItem" asp-route-loggedItemId="@item.Id" 
+                                      onsubmit="return confirm('Are you sure you want to remove this logged item?');">
+                                    <input type="hidden" name="SelectedDate" value="@Model.SelectedDate.ToString("yyyy-MM-dd")" />
+                                    <button type="submit" class="btn btn-danger btn-sm" title="Remove Logged Item">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <p>No food items logged for this date. <a asp-page="./LogFood" asp-route-logDate="@Model.SelectedDate.ToString("yyyy-MM-dd")">Log some now!</a></p>
+    }
+}
+else
+{
+    <p>Loading nutrition data or no data available for the selected date.</p>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
