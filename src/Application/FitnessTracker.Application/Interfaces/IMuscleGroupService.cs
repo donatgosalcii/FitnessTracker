@@ -1,7 +1,5 @@
 using FitnessTracker.Application.Common;
 using FitnessTracker.Application.DTOs.MuscleGroup;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace FitnessTracker.Application.Interfaces
 {

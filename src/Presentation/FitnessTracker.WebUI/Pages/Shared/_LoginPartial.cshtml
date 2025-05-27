@@ -1,5 +1,6 @@
 @using Microsoft.AspNetCore.Identity
-@using FitnessTracker.Domain.Entities
+@using FitnessTracker.Domain.Entities 
+
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
@@ -8,7 +9,7 @@
 {
     var appUser = await UserManager.GetUserAsync(User); 
     var userName = appUser?.FirstName ?? appUser?.UserName ?? User.Identity?.Name;
-    var profilePictureUrl = appUser?.ProfilePictureUrl ?? "/images/profiles/placeholder.png";
+    var profilePictureUrl = !string.IsNullOrEmpty(appUser?.ProfilePictureUrl) ? appUser.ProfilePictureUrl : "/images/profiles/placeholder.png";
 
     <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle text-dark d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -16,8 +17,28 @@
             Hello @userName!
         </a>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-            <li><a class="dropdown-item" asp-page="/Account/Manage/MyProfile">My Profile</a></li>
-            <li><a class="dropdown-item" asp-page="/Account/Manage/ChangePassword">Change Password</a></li>
+            <li>
+                <a class="dropdown-item @(ViewData["ActivePage"] as string == "MyProfile" ? "active" : "")" 
+                   asp-page="/Account/Manage/MyProfile">My Profile</a>
+            </li>
+            <li>
+                <a class="dropdown-item @(ViewData["ActivePage"] as string == "NutritionGoals" ? "active" : "")" 
+                   asp-page="/Nutrition/Goals">Nutrition Goals</a>
+            </li> 
+            <li>
+                <a class="dropdown-item @(ViewData["ActivePage"] as string == "MyFoods" ? "active" : "")" 
+                   asp-page="/Nutrition/MyFoods">My Custom Foods</a>
+            </li>
+            <li><a class="dropdown-item @(ViewData["ActivePage"] as string == "LogFood" ? "active" : "")" 
+                   asp-page="/Nutrition/LogFood">Log Food</a>
+            </li>
+            <li><a class="dropdown-item @(ViewData["ActivePage"] as string == "LogHistory" ? "active" : "")"
+                   asp-page="/Nutrition/LogHistory">Log History</a>
+                </li>
+            <li>
+                <a class="dropdown-item @(ViewData["ActivePage"] as string == "ChangePassword" ? "active" : "")" 
+                   asp-page="/Account/Manage/ChangePassword">Change Password</a>
+            </li>
             <li><hr class="dropdown-divider"></li>
             <li>
                 <form id="logoutFormNav" class="form-inline" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/Index", new { area = "" })" method="post">

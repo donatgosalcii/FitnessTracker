@@ -1,7 +1,6 @@
 using FitnessTracker.Application.DTOs.Chat;
 using FitnessTracker.Application.Interfaces;
 using FitnessTracker.Domain.Entities;
-using Microsoft.Extensions.Logging;
 
 namespace FitnessTracker.Application.Services
 {

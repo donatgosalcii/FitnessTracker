@@ -1,0 +1,147 @@
+@page
+@model FitnessTracker.WebUI.Pages.Nutrition.MyFoodsModel
+@{
+    ViewData["Title"] = "My Custom Foods";
+    ViewData["ActivePage"] = "MyFoods"; 
+}
+
+<h4>@ViewData["Title"]</h4>
+
+<partial name="_StatusMessage" model="Model.StatusMessage" />
+
+<div class="row">
+    <div class="col-md-8 order-md-1">
+        <h5>Your Custom Food Items</h5>
+        @if (Model.UserFoodItems != null && Model.UserFoodItems.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-sm">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Brand</th>
+                            <th>Serving</th>
+                            <th>Calories</th>
+                            <th>P (g)</th>
+                            <th>C (g)</th>
+                            <th>F (g)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.UserFoodItems)
+                        {
+                            <tr>
+                                <td>@item.Name</td>
+                                <td>@(item.Brand ?? "-")</td>
+                                <td>@item.ServingSizeValue.ToString("0.##") @item.ServingUnitDescription</td>
+                                <td>@item.CaloriesPerServing.ToString("0")</td>
+                                <td>@item.ProteinPerServing.ToString("0.0")</td>
+                                <td>@item.CarbohydratesPerServing.ToString("0.0")</td>
+                                <td>@item.FatPerServing.ToString("0.0")</td>
+                                <td>
+                                    <a asp-page="./EditMyFood" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary me-1" title="Edit @item.Name">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form method="post" asp-page-handler="DeleteFoodItem" asp-route-foodItemId="@item.Id" style="display:inline;" 
+                                          onsubmit="return confirm('Are you sure you want to delete \'@item.Name.Replace("'", "\\'")\'? This action cannot be undone.');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete @item.Name">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <p>You haven't added any custom food items yet.</p>
+        }
+    </div>
+
+    <div class="col-md-4 order-md-2">
+        <h5>Add New Custom Food</h5>
+        <form method="post" asp-page-handler="AddFoodItem">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="NewFoodItem.Name" class="form-control" placeholder="Food Name" />
+                <label asp-for="NewFoodItem.Name"></label>
+                <span asp-validation-for="NewFoodItem.Name" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="NewFoodItem.Brand" class="form-control" placeholder="Brand (Optional)" />
+                <label asp-for="NewFoodItem.Brand"></label>
+                <span asp-validation-for="NewFoodItem.Brand" class="text-danger"></span>
+            </div>
+            
+            <div class="row g-2 mb-3">
+                <div class="col-md-7">
+                    <div class="form-floating">
+                        <input asp-for="NewFoodItem.ServingSizeValue" type="number" step="any" class="form-control" placeholder="Serving Size" />
+                        <label asp-for="NewFoodItem.ServingSizeValue"></label>
+                        <span asp-validation-for="NewFoodItem.ServingSizeValue" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                     <div class="form-floating">
+                        <select asp-for="NewFoodItem.ServingUnit" asp-items="Model.ServingUnitSelectList" class="form-select"></select>
+                        <label asp-for="NewFoodItem.ServingUnit"></label>
+                        <span asp-validation-for="NewFoodItem.ServingUnit" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="NewFoodItem.CaloriesPerServing" type="number" step="any" class="form-control" placeholder="Calories" />
+                <label asp-for="NewFoodItem.CaloriesPerServing"></label>
+                <span asp-validation-for="NewFoodItem.CaloriesPerServing" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="NewFoodItem.ProteinPerServing" type="number" step="any" class="form-control" placeholder="Protein (g)" />
+                <label asp-for="NewFoodItem.ProteinPerServing"></label>
+                <span asp-validation-for="NewFoodItem.ProteinPerServing" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="NewFoodItem.CarbohydratesPerServing" type="number" step="any" class="form-control" placeholder="Carbs (g)" />
+                <label asp-for="NewFoodItem.CarbohydratesPerServing"></label>
+                <span asp-validation-for="NewFoodItem.CarbohydratesPerServing" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="NewFoodItem.FatPerServing" type="number" step="any" class="form-control" placeholder="Fat (g)" />
+                <label asp-for="NewFoodItem.FatPerServing"></label>
+                <span asp-validation-for="NewFoodItem.FatPerServing" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="NewFoodItem.FiberPerServing" type="number" step="any" class="form-control" placeholder="Fiber (g) (Optional)" />
+                <label asp-for="NewFoodItem.FiberPerServing"></label>
+                <span asp-validation-for="NewFoodItem.FiberPerServing" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="NewFoodItem.SugarPerServing" type="number" step="any" class="form-control" placeholder="Sugar (g) (Optional)" />
+                <label asp-for="NewFoodItem.SugarPerServing"></label>
+                <span asp-validation-for="NewFoodItem.SugarPerServing" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="NewFoodItem.SodiumPerServing" type="number" step="any" class="form-control" placeholder="Sodium (mg) (Optional)" />
+                <label asp-for="NewFoodItem.SodiumPerServing"></label>
+                <span asp-validation-for="NewFoodItem.SodiumPerServing" class="text-danger"></span>
+            </div>
+             <div class="form-floating mb-3">
+                <input asp-for="NewFoodItem.Barcode" class="form-control" placeholder="Barcode (Optional)" />
+                <label asp-for="NewFoodItem.Barcode"></label>
+                <span asp-validation-for="NewFoodItem.Barcode" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Add Food Item</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
